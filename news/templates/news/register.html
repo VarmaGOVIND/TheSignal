@@ -1,0 +1,283 @@
+{% extends 'news/base.html' %}
+{% block title %}Register — The Signal{% endblock %}
+
+{% block content %}
+<style>
+  .ticker, .topic-nav, .navbar { display: none; }
+
+  .register-page {
+    min-height: 100vh; display: grid;
+    grid-template-columns: 1fr 1fr;
+    background: var(--bg); transition: background .35s;
+  }
+
+  .reg-hero {
+    position: relative; overflow: hidden;
+    background: #0a0a0b;
+    display: flex; flex-direction: column;
+    justify-content: flex-end; padding: 48px;
+  }
+  .reg-hero-img {
+    position: absolute; inset: 0;
+    object-fit: cover; width: 100%; height: 100%;
+    filter: brightness(.35);
+  }
+  .reg-hero-content { position: relative; z-index: 2; }
+  .reg-hero-logo {
+    font-family: Georgia, serif; font-size: 34px; font-weight: 900;
+    color: #f0ede6; letter-spacing: -.02em; margin-bottom: 14px;
+  }
+
+  .benefits { display: flex; flex-direction: column; gap: 12px; margin-bottom: 28px; }
+  .benefit-item { display: flex; align-items: center; gap: 10px; }
+  .benefit-icon {
+    width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+    background: rgba(232,255,71,.15); border: 1px solid rgba(232,255,71,.3);
+    display: flex; align-items: center; justify-content: center; font-size: 14px;
+  }
+  .benefit-text { font-size: 13px; color: #ccc; }
+
+  .reg-hero-sub { font-size: 12px; color: #555; }
+
+  .reg-form-panel {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 40px 40px; position: relative;
+    background: var(--bg); transition: background .35s;
+    overflow-y: auto;
+  }
+
+  .reg-card { width: 100%; max-width: 420px; }
+  .reg-title {
+    font-family: Georgia, serif; font-size: 24px; font-weight: 900;
+    color: var(--text); margin-bottom: 4px; transition: color .35s;
+  }
+  .reg-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 24px; }
+  .name-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .pw-strength-bar { height: 4px; border-radius: 4px; background: var(--border); margin-top: 6px; overflow: hidden; }
+  .pw-strength-fill { height: 4px; border-radius: 4px; transition: width .3s, background .3s; width: 0; }
+  .pw-strength-label { font-size: 10px; color: var(--text-muted); margin-top: 4px; }
+  .avatar-picker { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+  .avatar-option {
+    width: 36px; height: 36px; border-radius: 50%; cursor: none;
+    border: 2px solid var(--border2); display: flex; align-items: center;
+    justify-content: center; font-size: 16px; transition: all .15s;
+  }
+  .avatar-option:hover, .avatar-option.selected { border-color: var(--accent); transform: scale(1.1); }
+  .terms-row { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 20px; }
+  .terms-row input { width: auto; margin-top: 2px; accent-color: var(--accent); flex-shrink: 0; }
+  .terms-row label { font-size: 12px; color: var(--text-muted); line-height: 1.5; cursor: none; }
+  .terms-row a { color: var(--accent); }
+
+  .reg-submit {
+    width: 100%; padding: 12px; background: var(--accent);
+    color: var(--accent-tx); border: none; border-radius: 8px;
+    font-family: inherit; font-size: 14px; font-weight: 700;
+    cursor: none; transition: opacity .18s; margin-bottom: 16px;
+  }
+  .reg-submit:hover { opacity: .85; }
+
+  .reg-login { font-size: 12px; color: var(--text-muted); text-align: center; }
+  .reg-login a { color: var(--accent); font-weight: 600; }
+
+ 
+  .field-errors { list-style: none; margin-top: 4px; }
+  .field-errors li { font-size: 11px; color: #ff4444; }
+
+  @media (max-width: 700px) {
+    .register-page { grid-template-columns: 1fr; }
+    .reg-hero { display: none; }
+    .reg-form-panel { padding: 28px 16px; }
+    .name-grid { grid-template-columns: 1fr; }
+  }
+</style>
+
+<div class="register-page">
+  <div class="reg-hero">
+    <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=900&q=80"
+         alt="hero" class="reg-hero-img">
+    <div class="reg-hero-content">
+      <div class="reg-hero-logo">THE SIGNAL</div>
+      <div class="benefits">
+        <div class="benefit-item">
+          <div class="benefit-icon">📰</div>
+          <span class="benefit-text">Access 10,000+ articles across 19 topics</span>
+        </div>
+        <div class="benefit-item">
+          <div class="benefit-icon">💬</div>
+          <span class="benefit-text">Comment, reply and engage with journalists</span>
+        </div>
+        <div class="benefit-item">
+          <div class="benefit-icon">🔖</div>
+          <span class="benefit-text">Save articles and build your reading list</span>
+        </div>
+        <div class="benefit-item">
+          <div class="benefit-icon">📧</div>
+          <span class="benefit-text">Daily briefing delivered to your inbox</span>
+        </div>
+      </div>
+      <p class="reg-hero-sub">Already 42,800 readers. Free forever.</p>
+    </div>
+  </div>
+
+
+  <div class="reg-form-panel">
+    <div style="position:absolute;top:20px;right:20px;">
+      <button class="theme-toggle" id="theme-toggle-reg">
+        <span id="reg-icon-l">🌙</span>
+        <div class="theme-toggle-knob"></div>
+        <span id="reg-icon-r">☀️</span>
+      </button>
+    </div>
+
+    <div class="reg-card">
+      <h1 class="reg-title">Create your account</h1>
+      <p class="reg-sub">Free forever. No credit card required.</p>
+
+      {% if form.non_field_errors %}
+        <div style="background:#3a1a1a;border:1px solid #ff4444;border-radius:8px;
+          padding:10px 14px;margin-bottom:16px;font-size:13px;color:#ff7777;">
+          {% for err in form.non_field_errors %}⚠️ {{ err }}{% endfor %}
+        </div>
+      {% endif %}
+
+      <form method="post" action="{% url 'register' %}" id="reg-form">
+        {% csrf_token %}
+
+        <div class="name-grid" style="margin-bottom:0;">
+          <div class="form-group">
+            <label class="form-label">First Name</label>
+            <input type="text" name="first_name" class="form-input"
+              placeholder="Jane" value="{{ form.first_name.value|default:'' }}">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Last Name</label>
+            <input type="text" name="last_name" class="form-input"
+              placeholder="Doe" value="{{ form.last_name.value|default:'' }}">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Username</label>
+          <div style="position:relative;">
+            <span style="position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--text-muted);">@</span>
+            <input type="text" name="username" class="form-input" style="padding-left:28px;"
+              placeholder="yourhandle" value="{{ form.username.value|default:'' }}" required
+              oninput="checkUsername(this.value)">
+          </div>
+          <div id="username-feedback" style="font-size:11px;margin-top:4px;"></div>
+          {% if form.username.errors %}
+            <ul class="field-errors">{% for e in form.username.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" name="email" class="form-input"
+            placeholder="you@example.com" value="{{ form.email.value|default:'' }}" required>
+          {% if form.email.errors %}
+            <ul class="field-errors">{% for e in form.email.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <div style="position:relative;">
+            <input type="password" name="password1" id="pw1" class="form-input"
+              style="padding-right:40px;" placeholder="Min 8 characters" required
+              oninput="checkStrength(this.value)">
+            <button type="button" class="pw-toggle" onclick="togglePw('pw1',this)">👁</button>
+          </div>
+          <div class="pw-strength-bar"><div class="pw-strength-fill" id="pw-bar"></div></div>
+          <div class="pw-strength-label" id="pw-label">Enter a password</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Confirm Password</label>
+          <div style="position:relative;">
+            <input type="password" name="password2" id="pw2" class="form-input"
+              style="padding-right:40px;" placeholder="Repeat password" required
+              oninput="checkMatch()">
+            <button type="button" class="pw-toggle" onclick="togglePw('pw2',this)">👁</button>
+          </div>
+          <div id="pw-match" style="font-size:11px;margin-top:4px;"></div>
+          {% if form.password2.errors %}
+            <ul class="field-errors">{% for e in form.password2.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+          {% endif %}
+        </div>
+
+        <div class="terms-row">
+          <input type="checkbox" id="terms" name="terms" required>
+          <label for="terms">
+            I agree to The Signal's
+            <a href="#">Terms of Service</a> and
+            <a href="#">Privacy Policy</a>
+          </label>
+        </div>
+
+        <button type="submit" class="reg-submit">Create Account →</button>
+      </form>
+
+      <p class="reg-login">Already have an account? <a href="{% url 'login' %}">Sign in →</a></p>
+    </div>
+  </div>
+</div>
+
+<script>
+
+  function togglePw(id, btn) {
+    const f = document.getElementById(id);
+    f.type = f.type === 'password' ? 'text' : 'password';
+    btn.textContent = f.type === 'password' ? '👁' : '🙈';
+  }
+
+  function checkStrength(val) {
+    const bar = document.getElementById('pw-bar');
+    const lbl = document.getElementById('pw-label');
+    let score = 0;
+    if (val.length >= 8)              score++;
+    if (/[A-Z]/.test(val))            score++;
+    if (/[0-9]/.test(val))            score++;
+    if (/[^A-Za-z0-9]/.test(val))    score++;
+    const states = [
+      {w:'0%',   c:'#333',    t:'Enter a password'},
+      {w:'25%',  c:'#ff4444', t:'Weak'},
+      {w:'50%',  c:'#ffaa47', t:'Fair'},
+      {w:'75%',  c:'#e8ff47', t:'Good'},
+      {w:'100%', c:'#47ff8f', t:'Strong ✓'},
+    ];
+    const s = states[score];
+    bar.style.width = s.w; bar.style.background = s.c;
+    lbl.textContent = s.t; lbl.style.color = s.c;
+  }
+
+  function checkMatch() {
+    const p1 = document.getElementById('pw1').value;
+    const p2 = document.getElementById('pw2').value;
+    const el = document.getElementById('pw-match');
+    if (!p2) { el.textContent = ''; return; }
+    if (p1 === p2) { el.textContent = '✓ Passwords match'; el.style.color = '#47ff8f'; }
+    else           { el.textContent = '✗ Passwords do not match'; el.style.color = '#ff4444'; }
+  }
+
+  function checkUsername(val) {
+    const el = document.getElementById('username-feedback');
+    if (!val) { el.textContent = ''; return; }
+    if (val.length < 3) { el.textContent = '✗ Too short (min 3)'; el.style.color = '#ff4444'; return; }
+    if (!/^[a-z0-9_]+$/i.test(val)) { el.textContent = '✗ Letters, numbers and _ only'; el.style.color = '#ff4444'; return; }
+    el.textContent = '✓ Looks good'; el.style.color = '#47ff8f';
+  }
+  const regBtn = document.getElementById('theme-toggle-reg');
+  function syncReg(t) {
+    document.getElementById('reg-icon-l').textContent = t==='dark'?'🌙':'☀️';
+    document.getElementById('reg-icon-r').textContent = t==='dark'?'☀️':'🌙';
+  }
+  syncReg(document.documentElement.getAttribute('data-theme'));
+  regBtn.addEventListener('click', () => {
+    const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', t);
+    localStorage.setItem('signal-theme', t);
+    syncReg(t);
+  });
+</script>
+{% endblock %}

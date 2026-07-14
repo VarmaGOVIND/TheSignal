@@ -1,0 +1,250 @@
+{% extends 'news/base.html' %}
+{% load static %}
+{% load news_extras %}
+{% block title %}The Signal — Latest News{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'news/css/home.css' %}">
+
+<script>
+  window.DjangoConfig = {
+    csrfToken: '{{ csrf_token }}',
+    isAuthenticated: {% if user.is_authenticated %}true{% else %}false{% endif %},
+    loginUrl: '{% url "login" %}'
+  };
+</script>
+
+<div class="main-grid">
+  <div>
+    {% if featured %}
+    <div class="spotlight-wrap {% if featured.dark_mode %}dark-article{% endif %}">
+      <div class="spotlight-overlay"></div>
+
+      <a href="{% url 'article_detail' featured.pk %}"
+         class="featured-card {% if featured.dark_mode %}dark-article{% endif %}">
+
+        {% if featured.dark_mode %}
+          <div style="position:absolute;top:10px;right:10px;z-index:5;">
+            <span class="badge badge-dark">🌑 DARK ONLY</span>
+          </div>
+        {% endif %}
+
+        <div class="featured-thumb">
+          {% if featured.image %}
+            <img src="{{ featured.image.url }}" alt="{{ featured.category }}" loading="lazy">
+          {% else %}
+            <img src="{{ featured.category|default_image }}"
+                 alt="{{ featured.category }}" loading="lazy">
+          {% endif %}
+          <div class="featured-thumb-overlay"></div>
+          <div class="card-badges">
+            <span class="cat-badge" style="background:{{ featured.category|cat_color_bg }};
+              color:{{ featured.category|cat_color }};border:1px solid {{ featured.category|cat_color }};">
+              {{ featured.category }}
+            </span>
+            {% if featured.tag %}
+              <span class="badge badge-{{ featured.tag|lower }}">
+                {% if featured.tag == 'LIVE' %}&bull; {% endif %}{{ featured.tag }}
+              </span>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="featured-body">
+          <h1 class="featured-title">{{ featured.title }}</h1>
+          <p class="featured-excerpt">{{ featured.excerpt }}</p>
+          <div class="featured-meta">
+            <div class="card-author">
+              {% if featured.author.profile_picture %}
+                <img src="{{ featured.author.profile_picture.url }}" 
+                  style="width:32px;height:32px;border-radius:50%;object-fit:cover;
+                  border:1.5px solid {{ featured.category|cat_color }};"
+                  alt="{{ featured.author.username }}">
+              {% else %}
+                <div class="avatar" style="width:32px;height:32px;font-size:11px;
+                  border:1.5px solid {{ featured.category|cat_color }};
+                  color:{{ featured.category|cat_color }};
+                  background:{{ featured.category|cat_color_bg }};">
+                  {{ featured.author.get_full_name|default:featured.author.username|make_initials }}
+                </div>
+              {% endif %}
+              <div>
+                <div class="card-author-name" 
+                     onclick="event.stopPropagation(); window.location.href='{% url 'user_profile' featured.author.id %}';"
+                     style="cursor: pointer; color: inherit;">
+                  {{ featured.author.get_full_name|default:featured.author.username }}
+                </div>
+                <div class="card-author-time">{{ featured.created_at|timesince }} ago · {{ featured.read_time }} read</div>
+              </div>
+            </div>
+            <button class="like-btn {% if user in featured.likes.all %}liked{% endif %}"
+              data-article-id="{{ featured.pk }}" onclick="toggleLike(event, {{ featured.pk }})">
+              {% if user in featured.likes.all %}♥{% else %}♡{% endif %}
+              <span id="like-count-{{ featured.pk }}">{{ featured.like_count }}</span>
+            </button>
+          </div>
+        </div>
+      </a>
+    </div>
+    {% endif %}
+    <div class="section-header">
+      <div class="section-header-bar"></div>
+       {% if request.GET.q %}
+        🔍 Search results for: "<strong>{{ request.GET.q }}</strong>" 
+        <a href="{% url 'home' %}" style="margin-left:10px; color:var(--accent); font-size:11px; text-decoration:underline;">Clear Search</a>
+      {% elif active_topic == 'All' %}
+        Latest Stories
+      {% else %}
+        {{ active_topic }}
+      {% endif %}
+    </div>
+
+    <div class="article-grid">
+      {% for article in page.object_list %}
+        {% if not forloop.first or active_topic != 'All' %}
+        <div class="fade-in spotlight-wrap {% if article.dark_mode %}dark-article{% endif %}"
+             style="animation-delay: {{ forloop.counter0|multiply:50 }}ms">
+          <div class="spotlight-overlay"></div>
+
+          <a href="{% url 'article_detail' article.pk %}"
+             class="small-card {% if article.dark_mode %}dark-article{% endif %}">
+
+            <div class="small-thumb">
+              {% if article.image %}
+                <img src="{{ article.image.url }}" alt="{{ article.category }}" loading="lazy">
+              {% else %}
+                <img src="{{ article.category|default_image }}"
+                     alt="{{ article.category }}" loading="lazy">
+              {% endif %}
+              <div class="small-thumb-overlay"></div>
+              <div class="card-badges">
+                <span class="cat-badge" style="background:{{ article.category|cat_color_bg }};
+                  color:{{ article.category|cat_color }};border:1px solid {{ article.category|cat_color }};">
+                  {{ article.category }}
+                </span>
+              </div>
+              {% if article.tag %}
+                <div class="card-badges-right">
+                  <span class="badge badge-{{ article.tag|lower }}">{{ article.tag }}</span>
+                </div>
+              {% endif %}
+              {% if article.dark_mode %}
+                <div style="position:absolute;bottom:6px;right:8px;z-index:2;">
+                  <span class="badge badge-dark" style="font-size:8px;padding:1px 5px;">🌑</span>
+                </div>
+              {% endif %}
+            </div>
+
+            <div class="small-body">
+              <h3 class="small-title">{{ article.title }}</h3>
+              <div class="small-meta">
+                 <div style="display:flex;align-items:center;gap:6px;">
+                  {% if article.author.profile_picture %}
+                    <img src="{{ article.author.profile_picture.url }}" 
+                      style="width:18px;height:18px;border-radius:50%;object-fit:cover;"
+                      alt="{{ article.author.username }}">
+                  {% else %}
+                    <div class="avatar" style="width:18px;height:18px;font-size:7px;">
+                      {{ article.author.username|slice:":2"|upper }}
+                    </div>
+                  {% endif %}
+                  <span class="small-author">
+                    <span onclick="event.stopPropagation(); window.location.href='{% url 'user_profile' article.author.id %}';"
+                          style="cursor: pointer; color: var(--text-sub);">
+                      {{ article.author.username }}
+                    </span>
+                    · {{ article.created_at|timesince }} ago
+                  </span>
+                </div>
+                <button class="like-btn {% if user in article.likes.all %}liked{% endif %}"
+                  data-article-id="{{ article.pk }}"
+                  onclick="toggleLike(event, {{ article.pk }})">
+                  {% if user in article.likes.all %}♥{% else %}♡{% endif %}
+                  <span id="like-count-{{ article.pk }}">{{ article.like_count }}</span>
+                </button>
+              </div>
+            </div>
+          </a>
+        </div>
+        {% endif %}
+      {% empty %}
+        <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-muted);font-size:14px;">
+          {% if request.GET.q %}
+            😕 No articles found for "<strong>{{ request.GET.q }}</strong>". Try a different keyword.
+          {% elif active_topic != 'All' %}
+            No articles in this category yet.
+          {% else %}
+            No articles published yet.
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+
+    {% if page.has_other_pages %}
+    <div class="pagination">
+      {% if page.has_previous %}
+        <a href="?page={{ page.previous_page_number }}&topic={{ active_topic }}" class="page-link">← Prev</a>
+      {% endif %}
+      {% for num in page.paginator.page_range %}
+        <a href="?page={{ num }}&topic={{ active_topic }}"
+           class="page-link {% if num == page.number %}current{% endif %}">{{ num }}</a>
+      {% endfor %}
+      {% if page.has_next %}
+        <a href="?page={{ page.next_page_number }}&topic={{ active_topic }}" class="page-link">Next →</a>
+      {% endif %}
+    </div>
+    {% endif %}
+
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-card">
+      <div class="sidebar-title">🔥 Trending Now</div>
+      {% for art in trending %}
+        <a href="{% url 'article_detail' art.pk %}" class="trending-item">
+          <span class="trending-rank">{{ forloop.counter }}</span>
+          <div>
+            <div class="trending-text">{{ art.title|truncatechars:58 }}</div>
+            <div class="trending-views">♥ {{ art.num_likes }} · {{ art.category }}</div>
+          </div>
+        </a>
+      {% endfor %}
+    </div>
+
+    <!-- NEWSLETTER -->
+    <!--<div class="newsletter-card">
+      <div class="newsletter-title">Daily Briefing</div>
+      
+      {% if user.is_authenticated and user_is_subscribed %}
+        <p class="newsletter-desc" style="color: var(--success); font-weight: 600;">
+          ✓ You're subscribed!
+        </p>
+      {% else %}
+        <p class="newsletter-desc">5 stories that matter, every morning at 7AM. No noise, just signal.</p>
+        <form method="post" action="{% url 'newsletter_subscribe' %}">
+          {% csrf_token %}
+          <input type="email" name="email" value="{{ user.email }}" class="form-input"
+                 placeholder="your@email.com" style="margin-bottom:8px;" required>
+          <button type="submit" class="btn btn-primary btn-full">Subscribe Free →</button>
+        </form>
+        <p class="newsletter-note">42,800 readers · Unsubscribe anytime</p>
+      {% endif %}
+    </div>-->
+
+    
+    <div class="sidebar-card">
+      <div class="sidebar-title">Browse Topics</div>
+      <div class="topic-tags">
+        {% for topic in topics %}
+          <a href="?topic={{ topic }}" class="topic-tag">{{ topic }}</a>
+        {% endfor %}
+      </div>
+    </div>
+
+  </aside>
+</div>
+
+<script src="{% static 'news/js/home.js' %}"></script>
+
+{% endblock %}

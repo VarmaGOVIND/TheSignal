@@ -1,0 +1,281 @@
+{% extends 'news/base.html' %}
+{% block title %}{{ author.get_full_name|default:author.username }} — The Signal{% endblock %}
+
+{% block content %}
+<style>
+  .author-container {
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 0 20px 60px;
+  }
+
+  .author-hero {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 36px 40px;
+    margin-bottom: 36px;
+    display: flex;
+    gap: 32px;
+    align-items: center;
+    flex-wrap: wrap;
+    transition: background .3s;
+  }
+  .author-avatar-wrap {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    overflow: hidden;
+    border: 2px solid rgba(71,200,255,.35);
+  }
+  .author-avatar-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .author-avatar-initials {
+    width: 100%;
+    height: 100%;
+    background: rgba(71,200,255,.1);
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: .02em;
+  }
+
+  
+  .author-meta { flex: 1; min-width: 220px; }
+  .author-name {
+    font-family: Georgia, serif;
+    font-size: 28px;
+    font-weight: 900;
+    color: var(--text);
+    margin-bottom: 10px;
+    line-height: 1.15;
+  }
+  .author-detail {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+  .author-detail svg { flex-shrink: 0; }
+  .author-detail a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 500;
+  }
+  .author-detail a:hover { text-decoration: underline; }
+  .author-stat-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 14px;
+    background: rgba(71,200,255,.1);
+    color: var(--accent);
+    border: 1px solid rgba(71,200,255,.2);
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 18px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 12px;
+  }
+  .section-title {
+    font-family: Georgia, serif;
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text);
+  }
+  .section-count { font-size: 12px; color: var(--text-muted); }
+
+  
+  .articles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+  .article-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    text-decoration: none;
+    display: block;
+    transition: border-color .2s, transform .18s, background .2s;
+  }
+  .article-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--border2);
+    background: var(--bg-card2, var(--bg-card));
+  }
+  .article-thumb {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    display: block;
+  }
+  .article-thumb-placeholder {
+    width: 100%;
+    height: 160px;
+    background: var(--bg-card2, #1e1e1c);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--border2);
+  }
+  .article-body { padding: 14px 16px 16px; }
+  .article-title {
+    font-family: Georgia, serif;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.5;
+    color: var(--text);
+    margin-bottom: 9px;
+  }
+  .article-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 11px;
+    color: var(--text-muted);
+    flex-wrap: wrap;
+  }
+  .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+
+  
+  .empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 56px 20px;
+    color: var(--text-muted);
+  }
+  .empty-icon  { font-size: 32px; margin-bottom: 10px; }
+  .empty-text  { font-size: 14px; }
+
+  
+  @media (max-width: 600px) {
+    .author-hero { padding: 24px 20px; gap: 20px; }
+    .author-name { font-size: 22px; }
+    .author-avatar-wrap { width: 72px; height: 72px; }
+  }
+</style>
+
+<div class="author-container">
+
+  
+  <div class="author-hero">
+    <div class="author-avatar-wrap">
+      {% if author.profile_picture %}
+        <img src="{{ author.profile_picture.url }}" alt="{{ author.username }}">
+      {% else %}
+        <div class="author-avatar-initials">{{ author.username|slice:":2"|upper }}</div>
+      {% endif %}
+    </div>
+
+    <div class="author-meta">
+      <div class="author-name">{{ author.get_full_name|default:author.username }}</div>
+
+      <div class="author-detail">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+          <polyline points="22,6 12,13 2,6"/>
+        </svg>
+        {{ author.email }}
+      </div>
+
+      {% if author.social_link %}
+      <div class="author-detail">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+        </svg>
+        <a href="{{ author.social_link }}" target="_blank" rel="noopener noreferrer">Follow on Social Media</a>
+      </div>
+      {% endif %}
+
+      <div class="author-stat-pill">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14,2 14,8 20,8"/>
+        </svg>
+        {{ published_articles|length }} article{{ published_articles|length|pluralize }} published
+      </div>
+    </div>
+
+  </div>
+  <div class="section-header">
+    <span class="section-title">Articles by {{ author.get_full_name|default:author.username }}</span>
+    <span class="section-count">{{ published_articles|length }} total</span>
+  </div>
+
+  <div class="articles-grid">
+    {% for article in published_articles %}
+      <a href="{% url 'article_detail' article.pk %}" class="article-card">
+
+        {% if article.image %}
+          <img class="article-thumb" src="{{ article.image.url }}" alt="{{ article.title }}">
+        {% else %}
+          <div class="article-thumb-placeholder">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <circle cx="8.5" cy="8.5" r="1.5"/>
+              <polyline points="21,15 16,10 5,21"/>
+            </svg>
+          </div>
+        {% endif %}
+
+        <div class="article-body">
+          <div class="article-title">{{ article.title|truncatechars:70 }}</div>
+          <div class="article-meta">
+            <span class="meta-item">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/>
+              </svg>
+              {{ article.created_at|timesince }} ago
+            </span>
+            <span class="meta-item">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+              </svg>
+              {{ article.like_count }}
+            </span>
+            <span class="meta-item">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+              {{ article.views }}
+            </span>
+          </div>
+        </div>
+
+      </a>
+    {% empty %}
+      <div class="empty-state">
+        <div class="empty-icon">✍️</div>
+        <div class="empty-text">No articles published yet.</div>
+      </div>
+    {% endfor %}
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,767 @@
+{% extends 'news/admin_base.html' %}
+
+
+{% block content %}
+<style>
+
+  .editor-layout {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 20px;
+    align-items: start;
+  }
+
+  
+  .editor-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    transition: background .3s, border-color .3s;
+  }
+
+  .editor-section {
+    padding: 22px 24px;
+    border-bottom: 1px solid var(--border);
+    transition: border-color .3s;
+  }
+  .editor-section:last-child { border-bottom: none; }
+  .editor-section-title {
+    font-size: 11px; font-weight: 700; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--text-muted);
+    margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+  }
+  .editor-section-title span { font-size: 14px; }
+
+  
+  .title-input {
+    background: var(--input-bg); border: 1px solid var(--border2);
+    border-radius: 8px; color: var(--text); font-family: Georgia, serif;
+    font-size: 22px; font-weight: 700; padding: 12px 14px;
+    outline: none; width: 100%;
+    transition: border-color .2s, box-shadow .2s, background .3s;
+    line-height: 1.3;
+  }
+  .title-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+  }
+  .title-input::placeholder { color: var(--text-dim); font-style: italic; }
+
+  
+  .body-editor {
+    background: var(--input-bg); border: 1px solid var(--border2);
+    border-radius: 8px; color: var(--text); font-family: inherit;
+    font-size: 14px; line-height: 1.8; padding: 14px;
+    outline: none; width: 100%; min-height: 320px;
+    transition: border-color .2s, box-shadow .2s, background .3s;
+    resize: vertical;
+  }
+  .body-editor:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+  }
+  .body-editor::placeholder { color: var(--text-dim); }
+
+  .editor-toolbar {
+    display: flex; gap: 4px; flex-wrap: wrap;
+    padding: 8px 14px; background: var(--input-bg);
+    border: 1px solid var(--border2); border-bottom: none;
+    border-radius: 8px 8px 0 0;
+    transition: background .3s, border-color .3s;
+  }
+  .toolbar-btn {
+    background: none; border: 1px solid var(--border2);
+    border-radius: 5px; color: var(--text-muted);
+    font-size: 12px; padding: 3px 8px; cursor: none;
+    transition: all .15s; font-family: inherit;
+  }
+  .toolbar-btn:hover { background: var(--border2); color: var(--text); }
+  .editor-toolbar + .body-editor { border-radius: 0 0 8px 8px; }
+
+  
+  .meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px;
+  }
+
+  .upload-zone {
+    border: 2px dashed var(--border2); border-radius: 10px;
+    padding: 24px; text-align: center; cursor: none;
+    transition: border-color .2s, background .2s;
+    position: relative;
+  }
+  .upload-zone:hover { border-color: var(--accent); background: var(--accent-glow); }
+  .upload-zone.drag-over { border-color: var(--accent); background: var(--accent-glow); }
+  .upload-zone input[type="file"] {
+    position: absolute; inset: 0; opacity: 0; cursor: none; width: 100%; height: 100%;
+  }
+  .upload-icon  { font-size: 32px; margin-bottom: 8px; }
+  .upload-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .upload-sub   { font-size: 12px; color: var(--text-muted); }
+  .upload-preview {
+    width: 100%; max-height: 220px; object-fit: cover;
+    border-radius: 8px; margin-top: 14px; display: none;
+    border: 1px solid var(--border);
+  }
+  .upload-clear {
+    display: none; margin-top: 8px;
+    background: var(--danger-bg); color: var(--danger);
+    border: 1px solid var(--danger); border-radius: 6px;
+    font-size: 11px; padding: 4px 10px; cursor: none;
+  }
+
+  .existing-image-wrap { position: relative; display: inline-block; }
+  .existing-image { width: 100%; max-height: 200px; object-fit: cover; border-radius: 8px; display: block; }
+  .existing-image-label {
+    font-size: 11px; color: var(--text-muted); margin-bottom: 8px;
+  }
+  .clear-image-btn {
+    position: absolute; top: 8px; right: 8px;
+    background: rgba(0,0,0,.65); color: #fff;
+    border: none; border-radius: 6px; font-size: 11px;
+    padding: 3px 8px; cursor: none;
+  }
+
+  .toggles-row {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .toggle-card {
+    background: var(--input-bg); border: 1px solid var(--border2);
+    border-radius: 8px; padding: 14px 16px;
+    display: flex; align-items: center; justify-content: space-between;
+    transition: background .3s, border-color .3s;
+  }
+  .toggle-card-info { }
+  .toggle-card-label { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+  .toggle-card-hint  { font-size: 11px; color: var(--text-muted); }
+
+  .seo-score-bar { height: 6px; border-radius: 6px; background: var(--border); margin-top: 10px; overflow: hidden; }
+  .seo-score-fill { height: 6px; border-radius: 6px; transition: width .5s ease; }
+  .seo-tips { margin-top: 10px; display: flex; flex-direction: column; gap: 5px; }
+  .seo-tip { display: flex; align-items: center; gap: 7px; font-size: 11px; color: var(--text-muted); }
+  .seo-tip .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+  .sidebar-action-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 18px;
+    margin-bottom: 14px;
+    transition: background .3s, border-color .3s;
+  }
+  .sidebar-action-title {
+    font-size: 12px; font-weight: 700; color: var(--text-muted);
+    letter-spacing: .1em; text-transform: uppercase; margin-bottom: 14px;
+  }
+
+
+  .publish-btn {
+    width: 100%; padding: 13px; border: none; border-radius: 9px;
+    font-family: inherit; font-size: 15px; font-weight: 700; cursor: none;
+    background: var(--accent); color: var(--accent-tx);
+    transition: opacity .18s, transform .12s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    margin-bottom: 10px;
+  }
+  .publish-btn:hover  { opacity: .86; }
+  .publish-btn:active { transform: scale(.98); }
+  .draft-btn {
+    width: 100%; padding: 10px; border-radius: 9px;
+    background: transparent; border: 1px solid var(--border2);
+    color: var(--text-sub); font-family: inherit; font-size: 13px;
+    cursor: none; transition: all .15s; margin-bottom: 10px;
+  }
+  .draft-btn:hover { border-color: var(--warning); color: var(--warning); }
+
+  
+  .cat-dot {
+    width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+    display: inline-block; margin-right: 6px;
+  }
+
+  .word-count { font-size: 11px; color: var(--text-muted); margin-top: 5px; }
+  .excerpt-count { font-size: 10px; color: var(--text-muted); text-align: right; margin-top: 4px; }
+  .field-errors { list-style: none; margin-top: 5px; }
+  .field-errors li { font-size: 11px; color: var(--danger); padding: 2px 0; }
+
+  @media (max-width: 1100px) {
+    .editor-layout { grid-template-columns: 1fr; }
+    .meta-grid { grid-template-columns: 1fr 1fr; }
+    .toggles-row { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 640px) {
+    .meta-grid { grid-template-columns: 1fr; }
+    .editor-section { padding: 16px; }
+  }
+</style>
+
+<form method="post"
+      action="{% if action == 'Edit' %}{% url 'admin_article_edit' article.pk %}{% else %}{% url 'admin_article_create' %}{% endif %}"
+      enctype="multipart/form-data"
+      id="article-form"
+      novalidate>
+  {% csrf_token %}
+
+  {% if form.non_field_errors %}
+    <div class="adm-alert danger" style="margin-bottom:18px;">
+      <span class="adm-alert-icon">❌</span>
+      <div>{% for e in form.non_field_errors %}{{ e }}{% endfor %}</div>
+    </div>
+  {% endif %}
+
+  <div class="editor-layout">
+    <div>
+      <div class="editor-card" style="margin-bottom:16px;">
+        <div class="editor-section">
+          <div class="editor-section-title">
+            <span>📝</span> Title & Excerpt
+          </div>
+          <div style="margin-bottom:14px;">
+            <input type="text"
+                   name="title"
+                   class="title-input"
+                   placeholder="Write your headline here…"
+                   value="{{ form.title.value|default:'' }}"
+                   id="article-title"
+                   oninput="updatePreview();updateSEO()"
+                   maxlength="300" required>
+            {% if form.title.errors %}
+              <ul class="field-errors">{% for e in form.title.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+            {% endif %}
+            <div class="word-count" id="title-len">0 / 300 characters</div>
+          </div>
+          <div>
+            <label class="form-label">Excerpt <span style="color:var(--text-dim);">(shown in card previews)</span></label>
+            <div class="textarea-wrap">
+              <textarea name="excerpt"
+                        class="form-input form-textarea"
+                        rows="3"
+                        id="article-excerpt"
+                        data-maxlength="300"
+                        placeholder="A concise 1–2 sentence summary of the article…"
+                        oninput="updatePreview();updateSEO()"
+                        required>{{ form.excerpt.value|default:'' }}</textarea>
+              <span class="char-count"></span>
+            </div>
+            <div class="excerpt-count" id="excerpt-count">0 / 300</div>
+            {% if form.excerpt.errors %}
+              <ul class="field-errors">{% for e in form.excerpt.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+
+      <div class="editor-card" style="margin-bottom:16px;">
+        <div class="editor-section">
+          <div class="editor-section-title"><span>📄</span> Article Body</div>
+          <div class="editor-toolbar">
+            <button type="button" class="toolbar-btn" onclick="insertTag('**','**')" title="Bold"><b>B</b></button>
+            <button type="button" class="toolbar-btn" onclick="insertTag('*','*')"   title="Italic"><i>I</i></button>
+            <button type="button" class="toolbar-btn" onclick="insertTag('\n## ','\n')" title="Heading">H2</button>
+            <button type="button" class="toolbar-btn" onclick="insertTag('\n### ','\n')" title="Sub-heading">H3</button>
+            <button type="button" class="toolbar-btn" onclick="insertTag('\n> ','\n')" title="Blockquote">❝</button>
+            <button type="button" class="toolbar-btn" onclick="insertTag('\n- ','')" title="List">• List</button>
+            <button type="button" class="toolbar-btn" onclick="insertTag('[','](url)')" title="Link">🔗</button>
+            <button type="button" class="toolbar-btn" onclick="insertTag('\n---\n','')" title="Divider">―</button>
+            <div style="margin-left:auto;display:flex;gap:4px;">
+              <button type="button" class="toolbar-btn" onclick="togglePreviewMode()" id="preview-mode-btn" title="Preview">👁 Preview</button>
+            </div>
+          </div>
+
+          
+          <textarea name="body"
+                    class="body-editor"
+                    id="article-body"
+                    placeholder="Write the full article here. You can use Markdown — **bold**, *italic*, ## Heading, > blockquote, - list item…"
+                    oninput="updateWordCount();updateSEO()"
+                    required>{{ form.body.value|default:'' }}</textarea>
+                    
+          <div id="body-preview" style="display:none;
+            background:var(--input-bg);border:1px solid var(--border2);
+            border-radius:0 0 8px 8px;padding:16px;min-height:200px;
+            font-size:14px;color:var(--text-sub);line-height:1.8;"></div>
+
+          {% if form.body.errors %}
+            <ul class="field-errors">{% for e in form.body.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+          {% endif %}
+          <div class="word-count" id="word-count">0 words</div>
+        </div>
+      </div>
+
+      
+      <div class="editor-card" style="margin-bottom:16px;">
+        <div class="editor-section">
+          <div class="editor-section-title"><span>🏷️</span> Category & Meta</div>
+          <div class="meta-grid">
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label">Category <span style="color:var(--danger);">*</span></label>
+              <select name="category" class="form-input form-select" id="cat-select" onchange="updatePreview()" required>
+                {% for cat in categories %}
+                  <option value="{{ cat }}"
+                  {% if form.category.value == cat %}selected{% endif %}
+                  {% if article and article.category == cat %}selected{% endif %}>
+                    {{ cat }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+            
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label">Tag</label>
+              <select name="tag" class="form-input form-select" id="tag-select" onchange="updatePreview()">
+                <option value="" {% if not form.tag.value %}selected{% endif %}>None</option>
+                <option value="BREAKING"  {% if form.tag.value == 'BREAKING' %}selected{% endif %}>🔴 Breaking</option>
+                <option value="EXCLUSIVE" {% if form.tag.value == 'EXCLUSIVE' %}selected{% endif %}>🟢 Exclusive</option>
+                <option value="LIVE"      {% if form.tag.value == 'LIVE' %}selected{% endif %}>🟢 Live</option>    
+              </select>
+            </div>
+            
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label">Read Time</label>
+              <input type="text" name="read_time" class="form-input"
+                     placeholder="e.g. 5 min"
+                     value="{{ form.read_time.value|default:'5 min' }}">
+            </div>
+          </div>
+          {% if user.role == 'admin' %}
+          <div class="form-group" style="margin-top:14px;margin-bottom:0;">
+            <label class="form-label">Author</label>
+            <select name="author" class="form-input form-select">
+              {% for u in all_users %}
+                <option value="{{ u.pk }}"
+                  {% if form.author.value == u.pk|stringformat:"s" %}selected{% endif %}
+                  {% if article and article.author.pk == u.pk %}selected{% endif %}>
+                  {{ u.get_full_name|default:u.username }} (@{{ u.username }})
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+          {% else %}
+          <input type="hidden" name="author" value="{{ request.user.pk }}">
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="editor-card" style="margin-bottom:16px;">
+        <div class="editor-section">
+          <div class="editor-section-title"><span>🖼️</span> Cover Image</div>
+
+          {% if action == 'Edit' and article.image %}
+            
+            <p class="existing-image-label">Current cover image:</p>
+            <div class="existing-image-wrap" style="margin-bottom:14px;display:block;width:100%;">
+              <img src="{{ article.image.url }}" alt="current" class="existing-image">
+              <button type="button" class="clear-image-btn" onclick="clearExisting()">✕ Remove</button>
+            </div>
+            <input type="hidden" name="clear_image" id="clear-image-flag" value="">
+            <p class="form-hint">Upload a new image below to replace it, or leave empty to keep current.</p>
+          {% endif %}
+
+          <div class="upload-zone" id="upload-zone">
+            <input type="file" name="image" id="image-input" accept="image/*"
+                   onchange="previewImage(this)">
+            <div class="upload-icon">📸</div>
+            <div class="upload-title">Drop an image here or click to browse</div>
+            <div class="upload-sub">Recommended: 1200×630px · JPEG / PNG / WebP · Max 5MB</div>
+            <img id="img-preview" class="upload-preview" alt="preview">
+            <button type="button" class="upload-clear" id="clear-upload-btn" onclick="clearUpload()">✕ Remove</button>
+          </div>
+        </div>
+      </div>
+
+      
+      <div class="editor-card" style="margin-bottom:16px;">
+        <div class="editor-section">
+          <div class="editor-section-title"><span>⚙️</span> Settings</div>
+          <div class="toggles-row">
+            <div class="toggle-card">
+              <div class="toggle-card-info">
+                <div class="toggle-card-label">Published</div>
+                <div class="toggle-card-hint">Visible to all readers</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" name="is_published" id="is-published"
+                 {% if form.is_published.value %}checked{% endif %}
+                 {% if article and article.is_published %}checked{% endif %}>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="toggle-card">
+              <div class="toggle-card-info">
+                <div class="toggle-card-label">🌑 Dark Only</div>
+                <div class="toggle-card-hint">Stays dark in light mode</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" name="dark_mode" id="dark-mode-toggle"
+                  {% if form.dark_mode.value %}checked{% endif %}
+                  {% if article and article.dark_mode %}checked{% endif %}
+  onchange="updatePreview()">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="editor-card">
+        <div class="editor-section">
+          <div class="editor-section-title"><span>🔍</span> SEO Preview</div>
+          <div style="background:var(--input-bg);border:1px solid var(--border2);border-radius:8px;padding:16px;margin-bottom:14px;">
+            <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;">thesignal.com › article</div>
+            <div id="seo-title" style="font-size:16px;color:#47c8ff;font-weight:600;line-height:1.3;margin-bottom:4px;">
+              Article Title Preview
+            </div>
+            <div id="seo-desc" style="font-size:13px;color:var(--text-muted);line-height:1.5;">
+              Your excerpt will appear here…
+            </div>
+          </div>
+          
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+            <span style="font-size:11px;color:var(--text-muted);">SEO Score</span>
+            <span style="font-size:11px;font-weight:700;" id="seo-score-label">–</span>
+          </div>
+          <div class="seo-score-bar">
+            <div class="seo-score-fill" id="seo-score-fill" style="width:0%;background:var(--danger);"></div>
+          </div>
+          <div class="seo-tips" id="seo-tips"></div>
+        </div>
+      </div>
+    </div>
+
+
+    <div>
+      <div class="sidebar-action-card">
+        <div class="sidebar-action-title">Publish</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;
+          padding:9px 12px;background:var(--input-bg);border-radius:7px;
+          border:1px solid var(--border2);">
+          <div id="status-dot" style="width:8px;height:8px;border-radius:50%;background:var(--success);flex-shrink:0;"></div>
+          <span id="status-text" style="font-size:12px;color:var(--text-sub);">Ready to publish</span>
+        </div>
+
+        <button type="submit" class="publish-btn" name="action" value="publish">
+          📤 {% if action == 'Edit' %}Update Article{% else %}Publish Now{% endif %}
+        </button>
+        <button type="submit" class="draft-btn" name="action" value="draft">
+          💾 Save as Draft
+        </button>
+        {% if action == 'Edit' %}
+          <button type="button" class="draft-btn" style="border-color:var(--danger);color:var(--danger);"
+            onclick="confirmAction('Delete Article','This will permanently delete the article and all its comments. Are you sure?', () => { document.getElementById('delete-form').submit(); }, '🗑️')">
+            🗑️ Delete Article
+          </button>
+          <form id="delete-form" method="post" action="{% url 'admin_article_delete' article.pk %}" style="display:none;">
+            {% csrf_token %}
+          </form>
+        {% endif %}
+      </div>
+
+  
+      <div class="sidebar-action-card">
+        <div class="sidebar-action-title">Live Preview</div>
+        <div id="card-preview" style="border-radius:10px;overflow:hidden;border:1px solid var(--border);">
+          <div style="position:relative;height:110px;background:var(--input-bg);
+            display:flex;align-items:center;justify-content:center;overflow:hidden;">
+            <img id="prev-thumb" src="" alt=""
+              style="width:100%;height:100%;object-fit:cover;display:none;">
+            <span id="prev-thumb-placeholder" style="font-size:28px;">🖼️</span>
+            <div style="position:absolute;top:8px;left:8px;display:flex;gap:5px;" id="prev-badges">
+              <span id="prev-cat" class="badge" style="font-size:9px;">Category</span>
+              <span id="prev-tag" class="badge badge-breaking" style="font-size:9px;display:none;"></span>
+            </div>
+            <span id="prev-dark-badge" class="badge badge-dark"
+              style="position:absolute;bottom:6px;right:6px;font-size:8px;display:none;">🌑</span>
+          </div>
+          <div style="padding:12px;background:var(--bg-card);">
+            <div id="prev-title" style="font-family:Georgia,serif;font-size:13px;
+              font-weight:700;color:var(--text);line-height:1.3;margin-bottom:6px;">
+              Article title preview…
+            </div>
+            <div id="prev-excerpt" style="font-size:11px;color:var(--text-muted);line-height:1.4;margin-bottom:8px;">
+              Excerpt preview…
+            </div>
+            <div style="font-size:10px;color:var(--text-dim);">
+              By <span id="prev-author">Author</span> · Just now
+            </div>
+          </div>
+        </div>
+      </div>
+      {% if action == 'Edit' and article %}
+      <div class="sidebar-action-card">
+        <div class="sidebar-action-title">Article Stats</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);">
+            <span style="font-size:12px;color:var(--text-muted);">👁 Views</span>
+            <span style="font-size:12px;font-weight:600;color:var(--text);">{{ article.views }}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);">
+            <span style="font-size:12px;color:var(--text-muted);">♥ Likes</span>
+            <span style="font-size:12px;font-weight:600;color:var(--accent);">{{ article.like_count }}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);">
+            <span style="font-size:12px;color:var(--text-muted);">💬 Comments</span>
+            <span style="font-size:12px;font-weight:600;color:var(--text);">{{ article.comment_count }}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:6px 0;">
+            <span style="font-size:12px;color:var(--text-muted);">📅 Published</span>
+            <span style="font-size:12px;color:var(--text-muted);">{{ article.created_at|date:"M d, Y" }}</span>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="sidebar-action-card">
+        <div class="sidebar-action-title">Writing Tips</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+  <div style="display:flex;gap:8px;font-size:11px;color:var(--text-muted);line-height:1.4;">
+    <span style="color:var(--accent);flex-shrink:0;">→</span> Keep headlines under 70 characters
+  </div>
+  <div style="display:flex;gap:8px;font-size:11px;color:var(--text-muted);line-height:1.4;">
+    <span style="color:var(--accent);flex-shrink:0;">→</span> Use the excerpt to hook readers in 1–2 sentences
+  </div>
+  <div style="display:flex;gap:8px;font-size:11px;color:var(--text-muted);line-height:1.4;">
+    <span style="color:var(--accent);flex-shrink:0;">→</span> Add a cover image for higher engagement
+  </div>
+  <div style="display:flex;gap:8px;font-size:11px;color:var(--text-muted);line-height:1.4;">
+    <span style="color:var(--accent);flex-shrink:0;">→</span> Body should be at least 300 words
+  </div>
+  <div style="display:flex;gap:8px;font-size:11px;color:var(--text-muted);line-height:1.4;">
+    <span style="color:var(--accent);flex-shrink:0;">→</span> Use H2 headings to break up long content
+  </div>
+</div>
+
+    </div>
+
+
+  </div>
+</form>
+
+<script>
+
+  const CAT_COLORS = {
+    Politics:'#e85f47',Technology:'#47c8ff',Science:'#b47aff',Markets:'#47ff8f',
+    World:'#ffb347',Culture:'#ff6fa8',Sports:'#47fff0',Health:'#ff47c8',
+    Climate:'#8fff47',AI:'#ffe047',Space:'#7fa8ff',Business:'#ffcc47',
+    Law:'#ff7f7f',Education:'#7fffb4',Entertainment:'#ff9fff',
+    Travel:'#47e8ff',Food:'#ffaa47',Automotive:'#aaffaa',Defense:'#ff6666'
+  };
+  const TAG_CLASSES = { BREAKING:'badge-breaking', EXCLUSIVE:'badge-exclusive', LIVE:'badge-live' };
+
+  
+  function updatePreview() {
+    const title   = document.getElementById('article-title')?.value || 'Article title preview…';
+    const excerpt = document.getElementById('article-excerpt')?.value || 'Excerpt preview…';
+    const cat     = document.getElementById('cat-select')?.value || 'Category';
+    const tag     = document.getElementById('tag-select')?.value || '';
+    const dark    = document.getElementById('dark-mode-toggle')?.checked;
+
+    
+    const titleLen = document.getElementById('title-len');
+    if (titleLen) titleLen.textContent = `${title.length} / 300 characters`;
+
+    
+    const excCount = document.getElementById('excerpt-count');
+    if (excCount) excCount.textContent = `${excerpt.length} / 300`;
+
+    
+    document.getElementById('prev-title').textContent   = title.slice(0,70) || 'Article title preview…';
+    document.getElementById('prev-excerpt').textContent = excerpt.slice(0,100) || 'Excerpt preview…';
+
+    const catEl = document.getElementById('prev-cat');
+    const color = CAT_COLORS[cat] || '#aaa';
+    catEl.textContent = cat;
+    catEl.style.background = color + '22';
+    catEl.style.color = color;
+    catEl.style.border = `1px solid ${color}`;
+
+    const tagEl = document.getElementById('prev-tag');
+    tagEl.className = 'badge ' + (TAG_CLASSES[tag] || '');
+    tagEl.textContent = tag;
+    tagEl.style.display = tag ? 'inline-block' : 'none';
+
+    document.getElementById('prev-dark-badge').style.display = dark ? 'inline-block' : 'none';
+
+    
+    document.getElementById('seo-title').textContent = title || '—';
+    document.getElementById('seo-desc').textContent  = excerpt || '—';
+  }
+
+  
+  function updateWordCount() {
+    const body = document.getElementById('article-body')?.value || '';
+    const words = body.trim() ? body.trim().split(/\s+/).length : 0;
+    const el = document.getElementById('word-count');
+    if (el) el.textContent = `${words} word${words!==1?'s':''}`;
+  }
+
+  
+  function updateSEO() {
+    const title   = document.getElementById('article-title')?.value || '';
+    const excerpt = document.getElementById('article-excerpt')?.value || '';
+    const body    = document.getElementById('article-body')?.value || '';
+    const words   = body.trim() ? body.trim().split(/\s+/).length : 0;
+
+    const checks = [
+      { pass: title.length >= 10 && title.length <= 70, text: 'Title 10–70 characters' },
+      { pass: excerpt.length >= 50 && excerpt.length <= 300, text: 'Excerpt 50–300 characters' },
+      { pass: words >= 300,  text: 'Body ≥ 300 words' },
+      { pass: words >= 600,  text: 'Body ≥ 600 words (great!)' },
+      { pass: title.toLowerCase() !== title, text: 'Title has uppercase letters' },
+    ];
+
+    const score = Math.round((checks.filter(c=>c.pass).length / checks.length) * 100);
+    const fill  = document.getElementById('seo-score-fill');
+    const label = document.getElementById('seo-score-label');
+    const tips  = document.getElementById('seo-tips');
+
+    if (!fill) return;
+    fill.style.width = score + '%';
+    fill.style.background = score >= 80 ? 'var(--success)' : score >= 50 ? 'var(--warning)' : 'var(--danger)';
+    label.textContent = score + '%';
+    label.style.color = score >= 80 ? 'var(--success)' : score >= 50 ? 'var(--warning)' : 'var(--danger)';
+
+    tips.innerHTML = checks.map(c=>`
+      <div class="seo-tip">
+        <div class="dot" style="background:${c.pass?'var(--success)':'var(--danger)'};"></div>
+        <span style="color:${c.pass?'var(--success)':'var(--text-muted)'};">${c.text}</span>
+      </div>`).join('');
+  }
+
+  
+  function insertTag(before, after) {
+    const ta = document.getElementById('article-body');
+    const start = ta.selectionStart, end = ta.selectionEnd;
+    const sel = ta.value.substring(start, end);
+    ta.value = ta.value.substring(0,start) + before + sel + after + ta.value.substring(end);
+    ta.focus();
+    ta.selectionStart = ta.selectionEnd = start + before.length + sel.length + after.length;
+    updateWordCount(); updateSEO();
+  }
+
+  
+  let previewMode = false;
+  function togglePreviewMode() {
+    previewMode = !previewMode;
+    const ta   = document.getElementById('article-body');
+    const prev = document.getElementById('body-preview');
+    const btn  = document.getElementById('preview-mode-btn');
+    if (previewMode) {
+      
+      const md = ta.value
+        .replace(/^### (.+)$/gm, '<h3 style="margin:16px 0 8px;color:var(--text);">$1</h3>')
+        .replace(/^## (.+)$/gm,  '<h2 style="margin:20px 0 10px;color:var(--text);">$1</h2>')
+        .replace(/^> (.+)$/gm, '<blockquote style="border-left:3px solid var(--accent);padding-left:14px;color:var(--text-muted);font-style:italic;margin:12px 0;">$1</blockquote>')
+        .replace(/^- (.+)$/gm,  '<li style="margin:4px 0;color:var(--text-sub);">$1</li>')
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.+?)\*/g,   '<em>$1</em>')
+        .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" style="color:var(--info);">$1</a>')
+        .replace(/^---$/gm, '<hr style="border:none;border-top:1px solid var(--border);margin:20px 0;">')
+        .replace(/\n\n/g, '<br><br>')
+        .replace(/\n/g, '<br>');
+      prev.innerHTML = md;
+      ta.style.display   = 'none';
+      prev.style.display = 'block';
+      btn.textContent = '✏️ Edit';
+    } else {
+      ta.style.display   = 'block';
+      prev.style.display = 'none';
+      btn.textContent = '👁 Preview';
+    }
+  }
+
+  function previewImage(input) {
+    const file = input.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { showToast('Image must be under 5MB', 'danger'); return; }
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = document.getElementById('img-preview');
+      const clearBtn = document.getElementById('clear-upload-btn');
+      const placeholder = document.querySelector('.upload-icon');
+      const texts = document.querySelectorAll('.upload-title,.upload-sub');
+      img.src = e.target.result; img.style.display = 'block';
+      clearBtn.style.display = 'inline-block';
+      if (placeholder) placeholder.style.display = 'none';
+      texts.forEach(el => el.style.display = 'none');
+      const prevThumb = document.getElementById('prev-thumb');
+      const prevPlaceholder = document.getElementById('prev-thumb-placeholder');
+      prevThumb.src = e.target.result; prevThumb.style.display = 'block';
+      prevPlaceholder.style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function clearUpload() {
+    document.getElementById('image-input').value = '';
+    document.getElementById('img-preview').style.display = 'none';
+    document.getElementById('clear-upload-btn').style.display = 'none';
+    const placeholder = document.querySelector('.upload-icon');
+    const texts = document.querySelectorAll('.upload-title,.upload-sub');
+    if (placeholder) placeholder.style.display = 'block';
+    texts.forEach(el => el.style.display = 'block');
+    document.getElementById('prev-thumb').style.display = 'none';
+    document.getElementById('prev-thumb-placeholder').style.display = 'block';
+  }
+
+  function clearExisting() {
+    document.getElementById('clear-image-flag').value = '1';
+    const wrap = document.querySelector('.existing-image-wrap');
+    if (wrap) { wrap.style.opacity = '.3'; wrap.style.pointerEvents = 'none'; }
+    showToast('Image will be removed on save', 'info');
+  }
+
+
+  const zone = document.getElementById('upload-zone');
+  if (zone) {
+    zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+    zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+    zone.addEventListener('drop', e => {
+      e.preventDefault(); zone.classList.remove('drag-over');
+      const file = e.dataTransfer.files[0];
+      if (file && file.type.startsWith('image/')) {
+        const input = document.getElementById('image-input');
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        input.files = dt.files;
+        previewImage(input);
+      }
+    });
+  }
+
+  let formDirty = false;
+  document.getElementById('article-form')?.querySelectorAll('input,textarea,select').forEach(el => {
+    el.addEventListener('input', () => formDirty = true);
+    el.addEventListener('change', () => formDirty = true);
+  });
+  window.addEventListener('beforeunload', e => {
+    if (formDirty) { e.preventDefault(); e.returnValue = ''; }
+  });
+  document.getElementById('article-form').addEventListener('submit', () => { formDirty = false; });
+
+  document.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+      e.preventDefault();
+      formDirty = false;
+      document.querySelector('.publish-btn').click();
+    }
+  });
+
+  
+  updatePreview();
+  updateWordCount();
+  updateSEO();
+
+  
+  {% if action == 'Edit' and article.image %}
+  (function() {
+    const prevThumb = document.getElementById('prev-thumb');
+    const placeholder = document.getElementById('prev-thumb-placeholder');
+    prevThumb.src = '{{ article.image.url }}';
+    prevThumb.style.display = 'block';
+    placeholder.style.display = 'none';
+  })();
+  {% endif %}
+</script>
+{% endblock %}

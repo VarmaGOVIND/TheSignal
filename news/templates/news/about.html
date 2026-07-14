@@ -1,0 +1,28 @@
+{% extends 'news/base.html' %}
+{% block title %}About Us — The Signal{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 40px auto; padding: 0 20px;">
+  <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 32px;">
+    <h1 style="font-family: Georgia, serif; font-size: 32px; font-weight: 900; color: var(--text); margin-bottom: 20px;">About The Signal</h1>
+    <p style="font-size: 16px; color: var(--text-sub); line-height: 1.8; margin-bottom: 20px;">
+      Welcome to <strong style="color: var(--accent);">The Signal</strong> — your daily dose of news without the noise. 
+      In a world full of clickbait and sensationalism, we strive to bring you clear, concise, and factual reporting.
+    </p>
+    <p style="font-size: 16px; color: var(--text-sub); line-height: 1.8; margin-bottom: 20px;">
+      Our mission is simple: <em>"No noise, just signal."</em> We cover everything from global politics and technology to science and culture, 
+      ensuring you stay informed without being overwhelmed.
+    </p>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 30px;">
+      <div style="background: var(--input-bg); padding: 20px; border-radius: 10px; border: 1px solid var(--border);">
+        <h3 style="color: var(--accent); font-size: 18px; margin-bottom: 10px;"> Our Mission</h3>
+        <p style="font-size: 14px; color: var(--text-muted); line-height: 1.6;">To deliver unbiased, high-quality journalism that empowers readers to make informed decisions.</p>
+      </div>
+      <div style="background: var(--input-bg); padding: 20px; border-radius: 10px; border: 1px solid var(--border);">
+        <h3 style="color: var(--accent); font-size: 18px; margin-bottom: 10px;">👁️ Our Vision</h3>
+        <p style="font-size: 14px; color: var(--text-muted); line-height: 1.6;">To be the most trusted digital news platform where facts matter more than opinions.</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

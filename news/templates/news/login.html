@@ -1,0 +1,318 @@
+{% extends 'news/base.html' %}
+{% block title %}Sign In — The Signal{% endblock %}
+
+{% block content %}
+<style>
+  .ticker, .topic-nav, .navbar { display: none; }
+  .login-page {
+    min-height: 100vh; display: grid;
+    grid-template-columns: 1fr 1fr;
+    background: var(--bg);
+    transition: background .35s;
+  }
+
+  .login-hero {
+    position: relative; overflow: hidden;
+    background: #0a0a0b;
+    display: flex; flex-direction: column;
+    justify-content: flex-end; padding: 48px;
+  }
+  .login-hero-img {
+    position: absolute; inset: 0;
+    object-fit: cover; width: 100%; height: 100%;
+    filter: brightness(.45);
+  }
+  .login-hero-content { position: relative; z-index: 2; }
+  .login-hero-logo {
+    font-family: Georgia, serif; font-size: 36px; font-weight: 900;
+    color: #f0ede6; letter-spacing: -.02em; margin-bottom: 12px;
+  }
+  .login-hero-tagline { font-size: 15px; color: #888; line-height: 1.65; max-width: 380px; }
+  .login-hero-tagline strong { color: #e8ff47; }
+
+  .hero-headlines { margin-bottom: 32px; display: flex; flex-direction: column; gap: 10px; }
+  .hero-headline-pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1);
+    backdrop-filter: blur(8px); border-radius: 30px;
+    padding: 8px 14px; max-width: fit-content;
+    animation: heroFloat 6s ease-in-out infinite;
+  }
+  .hero-headline-pill:nth-child(2) { animation-delay: -2s; }
+  .hero-headline-pill:nth-child(3) { animation-delay: -4s; }
+  @keyframes heroFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+  .pill-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .pill-text { font-size: 12px; color: #ccc; }
+
+  .login-form-panel {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 48px 40px; position: relative;
+    background: var(--bg); transition: background .35s;
+  }
+  .login-theme-btn {
+    position: absolute; top: 20px; right: 20px;
+  }
+
+  .login-card {
+    width: 100%; max-width: 400px;
+  }
+  .login-card-title {
+    font-family: Georgia, serif; font-size: 26px; font-weight: 900;
+    color: var(--text); margin-bottom: 4px; transition: color .35s;
+  }
+  .login-card-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 28px; }
+
+  .input-icon-wrap { position: relative; }
+  .input-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); font-size: 14px; color: var(--text-muted); pointer-events: none; }
+  .input-with-icon { padding-left: 36px !important; }
+
+  .pw-toggle {
+    position: absolute; right: 11px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; font-size: 14px;
+    color: var(--text-muted); cursor: none;
+    transition: color .15s;
+  }
+  .pw-toggle:hover { color: var(--accent); }
+
+  .remember-row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .remember-label { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--text-muted); cursor: none; }
+  .remember-label input { width: auto; accent-color: var(--accent); }
+  .forgot-link { font-size: 12px; color: var(--accent); cursor: none; }
+  .forgot-link:hover { text-decoration: underline; }
+
+  .login-submit {
+    width: 100%; padding: 12px;
+    background: var(--accent); color: var(--accent-tx);
+    border: none; border-radius: 8px; font-family: inherit;
+    font-size: 14px; font-weight: 700; cursor: none;
+    transition: opacity .18s, transform .12s;
+    margin-bottom: 16px;
+  }
+  .login-submit:hover { opacity: .88; }
+  .login-submit:active { transform: scale(.98); }
+
+  .login-submit.loading { opacity: .7; pointer-events: none; }
+  .login-submit.loading::after {
+    content: ' ⟳';
+    display: inline-block;
+    animation: spin .7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .login-divider {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
+  }
+  .divider-line { flex: 1; height: 1px; background: var(--border); }
+  .divider-text { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: .08em; }
+
+  .demo-accounts {
+    background: var(--input-bg); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 16px; margin-bottom: 20px;
+    transition: background .35s, border-color .35s;
+  }
+  .demo-title { font-size: 10px; color: var(--text-muted); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 10px; }
+  .demo-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 6px 0; border-bottom: 1px solid var(--border); cursor: none;
+    transition: background .1s;
+  }
+  .demo-row:last-child { border-bottom: none; }
+  .demo-row:hover { background: var(--border); border-radius: 6px; padding-left: 6px; }
+  .demo-creds { font-size: 12px; color: var(--text-sub); }
+  .demo-creds code { color: var(--text-muted); font-family: monospace; font-size: 11px; }
+
+  .login-register { font-size: 12px; color: var(--text-muted); text-align: center; }
+  .login-register a { color: var(--accent); font-weight: 600; }
+  .login-register a:hover { text-decoration: underline; }
+
+  .login-error {
+    background: #3a1a1a; border: 1px solid #ff4444; border-radius: 8px;
+    padding: 10px 14px; margin-bottom: 16px;
+    font-size: 13px; color: #ff7777;
+    display: flex; align-items: center; gap: 8px;
+    animation: slideDown .3s ease;
+  }
+
+  @media (max-width: 700px) {
+    .login-page { grid-template-columns: 1fr; }
+    .login-hero  { display: none; }
+    .login-form-panel { padding: 32px 20px; }
+  }
+</style>
+
+<div class="login-page">
+  <div class="login-hero">
+    <img src="https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=900&q=80"
+         alt="hero" class="login-hero-img">
+
+    <div class="login-hero-content">
+      <div class="hero-headlines">
+        <div class="hero-headline-pill">
+          <div class="pill-dot" style="background:#ff3b3b;"></div>
+          <span class="pill-text">LIVE: Geneva Climate Summit — Day 2</span>
+        </div>
+        <div class="hero-headline-pill">
+          <div class="pill-dot" style="background:#e8ff47;"></div>
+          <span class="pill-text">NASA confirms water ice on Mars</span>
+        </div>
+        <div class="hero-headline-pill">
+          <div class="pill-dot" style="background:#47c8ff;"></div>
+          <span class="pill-text">S&amp;P 500 surges 2.3% on Fed pause signal</span>
+        </div>
+      </div>
+
+      <div class="login-hero-logo">THE SIGNAL</div>
+      <p class="login-hero-tagline">
+        The world's most important stories,<br>
+        told with <strong>clarity and precision</strong>.
+        Join 42,800 readers who trust us daily.
+      </p>
+    </div>
+  </div>
+
+  <div class="login-form-panel">
+    <div class="login-theme-btn">
+      <button class="theme-toggle" id="theme-toggle-login">
+        <span id="login-icon-l">🌙</span>
+        <div class="theme-toggle-knob"></div>
+        <span id="login-icon-r">☀️</span>
+      </button>
+    </div>
+
+    <div class="login-card">
+      <h1 class="login-card-title">Welcome </h1>
+      <p class="login-card-sub">Sign in to continue reading and commenting</p>
+
+      {% if error %}
+        <div class="login-error">⚠️ {{ error }}</div>
+      {% endif %}
+      {% if messages %}
+        {% for message in messages %}
+          <div class="login-error {% if 'success' in message.tags %}success{% endif %}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      <form method="post" action="{% url 'login' %}" id="login-form" onsubmit="handleSubmit(this)">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.GET.next }}">
+
+        <div class="form-group">
+          <label class="form-label">Username</label>
+          <div class="input-icon-wrap">
+            <span class="input-icon">👤</span>
+            <input type="text" name="username" class="form-input input-with-icon"
+              placeholder="Enter your username" autocomplete="username"
+              value="{{ request.POST.username }}" required autofocus>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <div class="input-icon-wrap">
+            <span class="input-icon">🔒</span>
+            <input type="password" name="password" id="password-input"
+              class="form-input input-with-icon" style="padding-right:40px;"
+              placeholder="Enter your password" autocomplete="current-password" required>
+            <button type="button" class="pw-toggle" onclick="togglePassword()" id="pw-eye">👁</button>
+          </div>
+        </div>
+
+        <div class="remember-row">
+          <label class="remember-label">
+           <input type="checkbox" name="remember"> Remember me
+          </label>
+          <a href="{% url 'password_reset' %}" class="forgot-link">Forgot password?</a>
+        </div>
+
+        <button type="submit" class="login-submit" id="login-btn">
+          Sign In →
+        </button>
+      </form>
+
+      
+      <!--<div class="login-divider">
+        <div class="divider-line"></div>
+        <span class="divider-text">Demo Accounts</span>
+        <div class="divider-line"></div>
+      </div>
+
+      <div class="demo-accounts">
+        <div class="demo-title">Click to auto-fill</div>
+        <div class="demo-row" onclick="fillDemo('admin','admin123')">
+          <span class="demo-creds">admin / <code>admin123</code></span>
+          <span class="badge badge-admin" style="font-size:9px;">ADMIN</span>
+        </div>
+        <div class="demo-row" onclick="fillDemo('alex','user123')">
+          <span class="demo-creds">alex / <code>user123</code></span>
+          <span class="user-role-badge" style="background:#47c8ff18;color:#47c8ff;border:1px solid #47c8ff;font-size:9px;padding:2px 8px;border-radius:20px;">USER</span>
+        </div>
+        <div class="demo-row" onclick="fillDemo('greenworld','user123')">
+          <span class="demo-creds">greenworld / <code>user123</code></span>
+          <span class="user-role-badge" style="background:#47c8ff18;color:#47c8ff;border:1px solid #47c8ff;font-size:9px;padding:2px 8px;border-radius:20px;">USER</span>
+        </div>
+        <div class="demo-row" onclick="fillDemo('jsmith','user123')">
+          <span class="demo-creds">jsmith / <code>user123</code></span>
+          <span class="user-role-badge" style="background:#47c8ff18;color:#47c8ff;border:1px solid #47c8ff;font-size:9px;padding:2px 8px;border-radius:20px;">USER</span>
+        </div>
+      </div>-->
+
+      <p class="login-register">
+        Don't have an account? <a href="{% url 'register' %}">Create one free →</a>
+      </p>
+
+      <p style="text-align:center;margin-top:10px;">
+        <a href="{% url 'home' %}" style="font-size:12px;color:var(--text-muted);">
+          Browse without signing in →
+        </a>
+      </p>
+
+    </div>
+  </div>
+</div>
+
+
+<script>
+  function fillDemo(u, p) {
+    document.querySelector('[name="username"]').value = u;
+    document.querySelector('[name="password"]').value = p;
+    document.getElementById('login-btn').focus();
+  }
+
+  function togglePassword() {
+    const inp = document.getElementById('password-input');
+    const eye = document.getElementById('pw-eye');
+    if (inp.type === 'password') { inp.type = 'text'; eye.textContent = '🙈'; }
+    else                         { inp.type = 'password'; eye.textContent = '👁'; }
+  }
+
+  function handleSubmit(form) {
+    const btn = document.getElementById('login-btn');
+    btn.classList.add('loading');
+    btn.textContent = 'Signing in…';
+    return true;
+  }
+
+  const lgBtn = document.getElementById('theme-toggle-login');
+  const lgL   = document.getElementById('login-icon-l');
+  const lgR   = document.getElementById('login-icon-r');
+  function syncLoginIcons(t) {
+    lgL.textContent = t==='dark' ? '🌙' : '☀️';
+    lgR.textContent = t==='dark' ? '☀️' : '🌙';
+  }
+  syncLoginIcons(document.documentElement.getAttribute('data-theme'));
+  lgBtn.addEventListener('click', () => {
+    const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', t);
+    localStorage.setItem('signal-theme', t);
+    syncLoginIcons(t);
+  });
+
+  document.querySelector('[name="username"]').focus();
+</script>
+{% endblock %}

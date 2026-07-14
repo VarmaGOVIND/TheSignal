@@ -1,0 +1,142 @@
+{% extends 'news/base.html' %}
+
+{% block content %}
+<style>
+  
+  .author-layout {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    min-height: calc(100vh - 54px);
+  }
+  
+  .author-sidebar {
+    background: var(--bg-nav);
+    border-right: 1px solid var(--border);
+    padding: 20px 0;
+    position: sticky;
+    top: 54px;
+    height: calc(100vh - 54px);
+    overflow-y: auto;
+  }
+  
+  .author-sidebar-inner {
+    padding: 0 14px;
+  }
+  
+  .author-nav-group {
+    margin-bottom: 24px;
+  }
+  
+  .author-nav-group-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding: 0 10px;
+    margin-bottom: 6px;
+  }
+  
+  .author-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 9px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--text-muted);
+    transition: all 0.15s;
+    position: relative;
+    text-decoration: none;
+  }
+  
+  .author-nav-item:hover {
+    background: var(--input-bg);
+    color: var(--text);
+  }
+  
+  .author-nav-item.active {
+    background: var(--accent-bg);
+    color: var(--accent);
+    font-weight: 600;
+  }
+  
+  .author-nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 20%;
+    bottom: 20%;
+    width: 3px;
+    border-radius: 0 3px 3px 0;
+    background: var(--accent);
+  }
+  
+  .author-nav-icon {
+    font-size: 15px;
+    flex-shrink: 0;
+    width: 20px;
+    text-align: center;
+  }
+  
+  .author-main {
+    background: var(--bg);
+    padding: 24px;
+  }
+  
+  @media (max-width: 768px) {
+    .author-layout {
+      grid-template-columns: 1fr;
+    }
+    .author-sidebar {
+      display: none;
+    }
+  }
+</style>
+
+<div class="author-layout">
+  
+  <aside class="author-sidebar">
+    <div class="author-sidebar-inner">
+      <div class="author-nav-group">
+        <div class="author-nav-group-label">Content</div>
+        
+        <a href="{% url 'admin_dashboard' %}" class="author-nav-item">
+          <span class="author-nav-icon">📰</span> My Articles
+        </a>
+        
+        <a href="{% url 'admin_article_create' %}" class="author-nav-item active">
+          <span class="author-nav-icon">✏️</span> New Article
+        </a>
+      </div>
+      
+      <div class="author-nav-group">
+        <div class="author-nav-group-label">Community</div>
+        
+        <a href="{% url 'admin_dashboard' %}#comments" class="author-nav-item">
+          <span class="author-nav-icon">💬</span> Comments
+        </a>
+      </div>
+      
+      <div class="author-nav-group">
+        <div class="author-nav-group-label">System</div>
+        
+        <a href="{% url 'home' %}" class="author-nav-item">
+          <span class="author-nav-icon">🌐</span> View Site
+        </a>
+        
+        <a href="{% url 'my_profile' %}" class="author-nav-item">
+          <span class="author-nav-icon">👤</span> My Profile
+        </a>
+      </div>
+      
+    </div>
+  </aside>
+
+  <main class="author-main">
+    {% block author_content %}{% endblock %}
+  </main>
+</div>
+
+{% endblock %}

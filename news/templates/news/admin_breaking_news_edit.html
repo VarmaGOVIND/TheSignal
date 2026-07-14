@@ -1,0 +1,49 @@
+{% extends 'news/base.html' %}
+{% load static %}
+{% block title %}Edit Breaking News — The Signal{% endblock %}
+
+{% block content %}
+<div style="max-width:600px; margin:40px auto; padding:0 20px;">
+  <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:14px; padding:32px;">
+    <h1 style="font-family:Georgia,serif; font-size:24px; font-weight:900; color:var(--text); margin-bottom:20px;">Edit Breaking News</h1>
+    
+    <form method="post">
+      {% csrf_token %}
+      <div style="margin-bottom:16px;">
+        <label style="font-size:12px; color:var(--text-sub); font-weight:600; display:block; margin-bottom:6px;">Breaking News Text</label>
+        <input type="text" name="text" value="{{ news_item.text }}" required maxlength="200" class="form-input">
+      </div>
+      
+      <div style="margin-bottom:16px;">
+        <label style="font-size:12px; color:var(--text-sub); font-weight:600; display:block; margin-bottom:6px;">Select Article</label>
+        <select name="article" class="form-select">
+          <option value="">-- No Article (Text Only) --</option>
+          {% for article in all_articles_for_breaking %}
+            <option value="{{ article.pk }}" {% if news_item.article.pk == article.pk %}selected{% endif %}>
+              {{ article.title|truncatechars:60 }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+      
+      <div style="margin-bottom:16px;">
+        <label style="font-size:12px; color:var(--text-sub); font-weight:600; display:block; margin-bottom:6px;">Order (Priority)</label>
+        <input type="number" name="order" value="{{ news_item.order }}" class="form-input" min="0">
+        <p style="font-size:11px; color:var(--text-muted); margin-top:4px;">Higher number = Shows first</p>
+      </div>
+      
+      <div style="margin-bottom:20px;">
+        <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+          <input type="checkbox" name="is_active" {% if news_item.is_active %}checked{% endif %} style="width:18px; height:18px;">
+          <span style="font-size:13px; color:var(--text);">Active (Show in ticker)</span>
+        </label>
+      </div>
+      
+      <div style="display:flex; gap:10px;">
+        <a href="{% url 'admin_dashboard' %}" class="btn btn-ghost" style="flex:1; padding:11px;">Cancel</a>
+        <button type="submit" class="btn btn-primary" style="flex:1; padding:11px;">Update</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

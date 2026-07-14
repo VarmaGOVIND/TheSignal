@@ -1,0 +1,28 @@
+{% extends 'news/base.html' %}
+{% block title %}Contact Us — The Signal{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 40px auto; padding: 0 20px;">
+  <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 32px;">
+    <h1 style="font-family: Georgia, serif; font-size: 32px; font-weight: 900; color: var(--text); margin-bottom: 10px;">Get in Touch</h1>
+    <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 30px;">Have a question, feedback, or a story tip? We'd love to hear from you.</p>
+    
+    <form method="POST">
+      {% csrf_token %}
+      <div style="margin-bottom: 16px;">
+        <label style="font-size: 12px; color: var(--text-sub); font-weight: 600; display: block; margin-bottom: 6px;">Your Name</label>
+        <input type="text" name="name" required class="form-input" placeholder="John Doe">
+      </div>
+      <div style="margin-bottom: 16px;">
+        <label style="font-size: 12px; color: var(--text-sub); font-weight: 600; display: block; margin-bottom: 6px;">Email Address</label>
+        <input type="email" name="email" required class="form-input" placeholder="john@example.com">
+      </div>
+      <div style="margin-bottom: 20px;">
+        <label style="font-size: 12px; color: var(--text-sub); font-weight: 600; display: block; margin-bottom: 6px;">Message</label>
+        <textarea name="message" rows="5" required class="form-textarea" placeholder="How can we help you?"></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px;">Send Message </button>
+    </form>
+  </div>
+</div>
+{% endblock %}

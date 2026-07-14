@@ -1,0 +1,276 @@
+{% load static %}
+{% load news_extras %} 
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <title>{% block title %}The Signal{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'news/css/base.css' %}">
+</head>
+<body>
+  <!-- Custom Cursor -->
+  <div id="cursor-ring"></div>
+  <div id="cursor-dot"></div>
+    <!-- INTRO ANIMATION -->
+  <div id="intro-overlay">
+    <div class="intro-ripple"></div>
+    <div class="intro-text">THE SIGNAL</div>
+  </div>
+
+<!-- Ticker -->
+
+{% if request.resolver_match.url_name == 'home' %}
+<div class="ticker">
+  <span class="ticker-label">BREAKING</span>
+  <div class="ticker-divider"></div>
+  <a href="#" id="ticker-link" style="flex:1; overflow:hidden; text-decoration:none;">
+    <span class="ticker-text" id="ticker-text">Loading headlines…</span>
+  </a>
+</div>
+{% endif %}
+  
+  <nav class="navbar">
+    <div class="navbar-inner">
+      <button class="hamburger" onclick="document.getElementById('mobile-menu').classList.add('active');document.getElementById('mobile-menu-overlay').classList.add('active');document.body.style.overflow='hidden';">☰</button>
+      <a href="{% url 'home' %}" class="logo">THE SIGNAL</a>
+      <div class="nav-actions">
+        <form method="GET" action="{% url 'home' %}" style="display:flex; gap:5px; margin-right:15px;">
+            <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Search articles..." 
+              style="padding:6px 12px; border-radius:6px; border:1px solid var(--border); 
+              background:var(--input-bg); color:var(--text); font-size:12px; outline:none; width:140px;">
+            <button type="submit" class="btn btn-primary btn-sm" style="padding:6px 10px;">🔍</button>
+        </form>
+        <button class="theme-toggle" id="theme-toggle" title="Toggle theme">
+          <span id="theme-icon-left">🌙</span>
+          <div class="theme-toggle-knob"></div>
+          <span id="theme-icon-right">☀️</span>
+        </button>
+
+        {% if user.is_authenticated %}
+          <div class="nav-user" style="position: relative;">
+            <div class="profile-dropdown-trigger" style="display:flex; align-items:center; gap:8px; cursor:pointer;" 
+                 onclick="toggleProfileDropdown()">
+      
+                {% if request.user.profile_picture %}
+                <img src="{{ request.user.profile_picture.url }}" id="nav-avatar" class="nav-avatar-img"
+                  style="border: 1.5px solid {% if request.user.role == 'admin' %}var(--accent){% else %}#47c8ff{% endif %};"
+                  alt="{{ request.user.username }}">
+              {% else %}
+                <div class="avatar" id="nav-avatar"
+                  style="width:30px;height:30px;font-size:11px;
+                    border:1.5px solid {% if request.user.role == 'admin' %}var(--accent){% else %}#47c8ff{% endif %};
+                    color:{% if request.user.role == 'admin' %}var(--accent){% else %}#47c8ff{% endif %};
+                    background:{% if request.user.role == 'admin' %}var(--accent-bg){% else %}#47c8ff18{% endif %};">
+                  {{ request.user.username|slice:":2"|upper }}
+                </div>
+              {% endif %}
+              <span class="nav-username">{{ user.get_full_name|default:user.username }}</span>
+              {% if user.role == 'admin' %}
+                <span class="badge badge-admin">ADMIN</span>
+              {% endif %}
+            </div>
+
+    <div id="profile-dropdown" style="display:none; position:absolute; top:100%; right:0; margin-top:10px;
+      background:var(--bg-card); border:1px solid var(--border); border-radius:10px; 
+      padding:8px; min-width:180px; box-shadow:var(--shadow); z-index:1000;">
+      
+      <a href="{% url 'my_profile' %}" style="display:block; padding:10px 14px; border-radius:6px; font-size:13px; color:var(--text); text-decoration:none;">
+        👤 My Profile
+      </a>
+      {% if user.role == 'author' or user.role == 'admin' %}
+        <a href="{% url 'admin_article_create' %}" style="display:block; padding:10px 14px; border-radius:6px; font-size:13px; color:var(--text); text-decoration:none;">
+          ✍️ Write Article
+        </a>
+      {% endif %}
+      
+      {% if user.role == 'admin' %}
+        <a href="{% url 'admin_dashboard' %}" style="display:block; padding:10px 14px; border-radius:6px; font-size:13px; color:var(--text); text-decoration:none;">
+          ⚙️ Admin Dashboard
+        </a>
+      {% endif %}
+      
+      <div style="height:1px; background:var(--border); margin:6px 0;"></div>
+      
+      <a href="{% url 'logout' %}" style="display:block; padding:10px 14px; border-radius:6px; font-size:13px; color:#ff4444; text-decoration:none;">
+         Logout
+      </a>
+    </div>
+
+  </div>
+{% else %}
+  <a href="{% url 'login' %}" class="btn btn-primary btn-sm">Sign In</a>
+  <a href="{% url 'register' %}" class="btn btn-ghost btn-sm">Register</a>
+{% endif %}
+      </div>
+    </div>
+  </nav>
+
+  {% if request.resolver_match.url_name == 'home' %}
+<div class="topic-nav">
+  <div class="topic-nav-inner">
+    
+    <a href="/" class="topic-btn {% if active == 'All' or not active %}active{% endif %}">
+      All
+    </a>
+
+    {% for topic in topics %}
+      <a href="?topic={{ topic }}"
+         class="topic-btn {% if active == topic %}active{% endif %}">
+        {{ topic }}
+      </a>
+    {% endfor %}
+
+  </div>
+</div>
+{% endif %}
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="notification-toast {% if message.tags == 'info' %}info{% endif %}" id="toast-{{ forloop.counter }}">
+        {% if message.tags == 'info' %}ℹ️{% else %}✅{% endif %} {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+  <main>{% block content %}{% endblock %}</main>
+
+<div class="mobile-menu-overlay" id="mobile-menu-overlay" onclick="document.getElementById('mobile-menu').classList.remove('active');this.classList.remove('active');document.body.style.overflow='';"></div>
+<div class="mobile-menu" id="mobile-menu">
+  <button class="mobile-menu-close" onclick="document.getElementById('mobile-menu').classList.remove('active');document.getElementById('mobile-menu-overlay').classList.remove('active');document.body.style.overflow='';">✕</button>
+  <div class="mobile-menu-content">
+  
+  {% if user.is_authenticated %}
+    <div class="mobile-user-card">
+        {% if request.user.profile_picture %}
+        <img src="{{ request.user.profile_picture.url }}" class="mobile-avatar-img"
+          style="border: 2px solid {% if request.user.role == 'admin' %}var(--accent){% else %}#47c8ff{% endif %};"
+          alt="{{ request.user.username }}">
+      {% else %}
+        <div class="mobile-user-avatar" style="
+          border-color: {% if request.user.role == 'admin' %}var(--accent){% elif request.user.role == 'author' %}#47c8ff{% else %}#47c8ff{% endif %};
+          color: {% if request.user.role == 'admin' %}var(--accent){% elif request.user.role == 'author' %}#47c8ff{% else %}#47c8ff{% endif %};
+          background: {% if request.user.role == 'admin' %}var(--accent-bg){% elif request.user.role == 'author' %}#47c8ff18{% else %}#47c8ff18{% endif %};">
+          {{ request.user.username|slice:":2"|upper }}
+        </div>
+      {% endif %}
+      <div class="mobile-user-info">
+        <div class="mobile-user-name">{{ user.get_full_name|default:user.username }}</div>
+        <div class="mobile-user-role">
+          {% if user.role == 'admin' %}👑 Administrator{% elif user.role == 'author' %}✍️ Author{% else %}👤 Member{% endif %}
+        </div>
+      </div>
+    </div>
+    
+    <div class="mobile-menu-divider"></div>
+    <a href="{% url 'home' %}" class="mobile-menu-link">
+      <span class="icon">🏠</span>
+      <span>Home</span>
+    </a>
+    
+    <a href="{% url 'my_profile' %}" class="mobile-menu-link">
+      <span class="icon">👤</span>
+      <span>My Profile</span>
+    </a>
+
+    {% if user.role == 'author' or user.role == 'admin' %}
+      <a href="{% url 'admin_article_create' %}" class="mobile-menu-link">
+        <span class="icon">✍️</span>
+        <span>Write Article</span>
+      </a>
+    {% endif %}
+    
+    {% if user.role == 'admin' %}
+      <a href="{% url 'admin_dashboard' %}" class="mobile-menu-link">
+        <span class="icon">⚙️</span>
+        <span>Admin Dashboard</span>
+      </a>
+    {% endif %}
+    
+    <div class="mobile-menu-divider"></div>
+    
+    <a href="{% url 'logout' %}" class="mobile-menu-link mobile-logout">
+      <span class="icon">🚪</span>
+      <span>Logout</span>
+    </a>
+    
+  {% else %}
+    <a href="{% url 'home' %}" class="mobile-menu-link">
+      <span class="icon">🏠</span>
+      <span>Home</span>
+    </a>
+    
+    <div class="mobile-menu-divider"></div>
+    
+    <a href="{% url 'login' %}" class="mobile-menu-link" style="
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-bg) 100%);
+      color: var(--accent-tx);
+      font-weight: 600;">
+      <span class="icon">🔐</span>
+      <span>Sign In</span>
+    </a>
+    
+    <a href="{% url 'register' %}" class="mobile-menu-link">
+      <span class="icon"></span>
+      <span>Register</span>
+    </a>
+  {% endif %}
+  
+</div>
+  
+</div>
+</div>
+
+{% if not user.is_authenticated and request.resolver_match.url_name == 'home' %}
+<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:24px;margin:32px 0;text-align:center;">
+  <h3 style="font-family:Georgia,serif;font-size:20px;font-weight:900;color:var(--accent);margin-bottom:8px;">
+    📧 Daily Briefing
+  </h3>
+  <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;line-height:1.5;">
+    5 stories that matter, every morning at 7AM. No noise, just signal.
+  </p>
+  
+  {% if messages %}
+    {% for message in messages %}
+      <div style="margin-bottom:12px;padding:12px;border-radius:8px;background:{% if message.tags == 'success' %}#1a3a1a{% else %}#3a1a1a{% endif %};color:{% if message.tags == 'success' %}#47ff8f{% else %}#ff4444{% endif %};border:1px solid {% if message.tags == 'success' %}#47ff8f{% else %}#ff4444{% endif %};font-weight:500;">
+        {% if message.tags == 'success' %}✅{% else %}❌{% endif %} {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+  
+  <form method="POST" action="{% url 'newsletter_subscribe' %}" style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;max-width:400px;margin:0 auto;">
+    {% csrf_token %}
+    <input type="email" name="email" placeholder="your@email.com" required
+      style="flex:1;min-width:200px;padding:10px 14px;background:var(--input-bg);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-size:13px;outline:none;">
+    <button type="submit" class="btn btn-primary" style="padding:10px 20px;">
+      Subscribe Free →
+    </button>
+  </form>
+  
+  <div id="newsletter-message" style="margin-top:12px;font-size:12px;display:none;"></div>
+  <p style="font-size:11px;color:var(--text-dim);margin-top:8px;">
+    42,800 readers · Unsubscribe anytime
+  </p>
+</div>
+{% endif %}
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <span class="logo" style="font-size:20px;">THE SIGNAL</span>
+      <span class="footer-copy">© 2026 The Signal. All rights reserved.</span>
+      <nav class="footer-links">
+        <a href="{% url 'about' %}" class="footer-link">About</a>
+        <a href="{% url 'contact' %}" class="footer-link">Contact</a>
+        <a href="{% url 'privacy' %}" class="footer-link">Privacy</a>
+        <a href="{% url 'terms' %}" class="footer-link">Terms</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script src="{% static 'news/js/base.js' %}"></script>
+
+  {% block extra_js %}{% endblock %}
+  
+</body>
+</html>

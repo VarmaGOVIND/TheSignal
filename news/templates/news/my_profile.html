@@ -1,0 +1,526 @@
+{% extends 'news/base.html' %}
+{% block title %}My Profile — The Signal{% endblock %}
+
+{% block content %}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@300;400;500;600&display=swap');
+
+  /* ─── Base ─── */
+  .profile-page {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+    font-family: 'Inter', sans-serif;
+  }
+
+  /* ─── Masthead Header ─── */
+  .profile-masthead {
+    position: relative;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: var(--bg-card);
+    padding: 40px 36px 32px;
+    margin-bottom: 36px;
+    overflow: hidden;
+  }
+
+  /* Ghost letters behind the card */
+  .profile-masthead::before {
+    content: attr(data-initials);
+    position: absolute;
+    top: -10px;
+    right: -8px;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 160px;
+    font-weight: 900;
+    color: var(--accent);
+    opacity: 0.06;
+    line-height: 1;
+    pointer-events: none;
+    user-select: none;
+    letter-spacing: -4px;
+  }
+
+  /* thin accent line at top */
+  .profile-masthead::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--accent);
+    border-radius: 16px 16px 0 0;
+  }
+
+  .profile-masthead-inner {
+    display: flex;
+    gap: 28px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ─── Avatar ─── */
+  .profile-avatar-wrap {
+    position: relative;
+    flex-shrink: 0;
+  }
+  .profile-avatar-large {
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--accent);
+    display: block;
+  }
+  .avatar-fallback {
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    background: var(--accent-bg);
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 28px;
+    font-weight: 700;
+    border: 3px solid var(--accent);
+  }
+
+  /* ─── Identity block ─── */
+  .profile-identity {
+    flex: 1;
+    min-width: 0;
+  }
+  .profile-identity h1 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0 0 6px;
+    line-height: 1.2;
+  }
+  .profile-meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+  .profile-meta-item {
+    font-size: 13px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .profile-meta-item a { color: var(--accent); text-decoration: none; }
+  .profile-meta-item a:hover { text-decoration: underline; }
+
+  .badge-admin {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 4px;
+    padding: 2px 8px;
+  }
+
+  /* ─── Edit Form ─── */
+  .profile-edit-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+    margin-top: 6px;
+  }
+  .profile-input {
+    background: var(--input-bg);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+    transition: border-color 0.18s;
+    outline: none;
+  }
+  .profile-input:focus {
+    border-color: var(--accent);
+  }
+  .file-input-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--input-bg);
+    border: 1px dashed var(--border2);
+    color: var(--text-muted);
+    padding: 7px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: border-color 0.18s, color 0.18s;
+  }
+  .file-input-label:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .file-input-label input[type="file"] {
+    display: none;
+  }
+
+  /* ─── Sections ─── */
+  .profile-section {
+    margin-bottom: 36px;
+  }
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .section-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 0.01em;
+  }
+  .section-count {
+    font-size: 12px;
+    color: var(--text-muted);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 2px 9px;
+  }
+  .section-divider {
+    width: 32px;
+    height: 2px;
+    background: var(--accent);
+    border-radius: 2px;
+    margin-bottom: 14px;
+  }
+
+  /* ─── Activity Cards ─── */
+  .activity-item {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin-bottom: 10px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 4px 16px;
+    align-items: start;
+    transition: border-color 0.18s, transform 0.15s;
+  }
+  .activity-item:hover {
+    border-color: var(--accent);
+    transform: translateY(-1px);
+  }
+  .activity-item a {
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    line-height: 1.4;
+  }
+  .activity-item a:hover { color: var(--accent); }
+
+  .activity-meta {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    grid-column: 1;
+  }
+  .activity-comment-text {
+    font-size: 13px;
+    color: var(--text-sub);
+    margin-top: 6px;
+    padding-left: 10px;
+    border-left: 2px solid var(--accent);
+    opacity: 0.8;
+    font-style: italic;
+    grid-column: 1 / -1;
+    line-height: 1.5;
+  }
+
+  .activity-stat {
+    font-size: 12px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    padding-top: 2px;
+  }
+  .activity-stat-num {
+    font-weight: 600;
+    color: var(--accent);
+    margin-right: 2px;
+  }
+
+ 
+  .empty-state {
+    text-align: center;
+    padding: 32px 20px;
+    color: var(--text-muted);
+    font-size: 14px;
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+  }
+  
+  .profile-avatar-wrap {
+    position: relative; 
+  }
+  .upload-overlay {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    z-index: 10;
+  }
+  .upload-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    display: none;
+  }
+  .upload-overlay.loading .spinner { display: block; }
+  
+  .success-checkmark {
+    display: none;
+    animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  .upload-overlay.success .success-checkmark { display: block; }
+  .upload-overlay.success .spinner { display: none; }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes popIn { 
+    0% { transform: scale(0); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  @media (max-width: 600px) {
+    .profile-masthead { padding: 28px 20px 24px; }
+    .profile-masthead::before { font-size: 100px; }
+    .profile-masthead-inner { gap: 16px; }
+    .profile-identity h1 { font-size: 21px; }
+  }
+</style>
+
+<div class="profile-page">
+  <div class="profile-masthead" data-initials="{{ user.username|slice:':2'|upper }}">
+    <div class="profile-masthead-inner">
+      <div class="profile-avatar-wrap">
+        {% if user.profile_picture %}
+          <img src="{{ user.profile_picture.url }}?v={{ cache_buster }}" class="profile-avatar-large" alt="{{ user.username }}">
+        {% else %}
+          <div class="avatar-fallback">{{ user.username|slice:":2"|upper }}</div>
+        {% endif %}
+        <div class="upload-overlay" id="upload-overlay">
+          <div class="spinner" id="upload-spinner"></div>
+          <div class="success-checkmark" id="upload-success">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          </div>
+        </div>
+      </div>
+      <div class="profile-identity">
+        <h1>{{ user.get_full_name|default:user.username }}</h1>
+
+        <div class="profile-meta-row">
+          <span class="profile-meta-item">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+            {{ user.email }}
+          </span>
+          {% if user.social_link %}
+          <span class="profile-meta-item">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            <a href="{{ user.social_link }}" target="_blank">{{ user.social_link }}</a>
+          </span>
+          {% endif %}
+          {% if user.role == 'admin' %}
+            <span class="badge-admin">Administrator</span>
+          {% endif %}
+        </div>
+
+        <form method="POST" enctype="multipart/form-data" class="profile-edit-form">
+          {% csrf_token %}
+
+          <label class="file-input-label">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Upload photo
+            <input type="file" name="profile_picture" accept="image/*">
+          </label>
+
+          <input type="url" name="social_link" class="profile-input" placeholder="Social link" value="{{ user.social_link|default:'' }}" style="min-width:160px;">
+
+          {% if can_change_name %}
+            <input type="text" name="first_name" class="profile-input" placeholder="First name" value="{{ user.first_name }}">
+          {% else %}
+            <input type="text" class="profile-input" value="Name locked · 6 months" disabled style="opacity:0.45; cursor:not-allowed;">
+          {% endif %}
+
+          <button type="submit" class="btn btn-primary btn-sm">Save</button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+
+  {% if user.role == 'admin' and published_articles %}
+  <div class="profile-section">
+    <div class="section-header">
+      <span class="section-title">Published articles</span>
+      <span class="section-count">{{ published_articles|length }}</span>
+    </div>
+    <div class="section-divider"></div>
+    {% for article in published_articles %}
+      <div class="activity-item">
+        <a href="{% url 'article_detail' article.pk %}">{{ article.title }}</a>
+        <span class="activity-stat"><span class="activity-stat-num">{{ article.like_count }}</span> likes</span>
+        <div class="activity-meta">Published {{ article.created_at|timesince }} ago</div>
+      </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+
+  {% if my_comments %}
+  <div class="profile-section">
+    <div class="section-header">
+      <span class="section-title">Recent comments</span>
+      <span class="section-count">{{ my_comments|length }}</span>
+    </div>
+    <div class="section-divider"></div>
+    {% for comment in my_comments %}
+      <div class="activity-item">
+        <a href="{% url 'article_detail' comment.article.pk %}">{{ comment.article.title|truncatechars:55 }}</a>
+        <div class="activity-meta">{{ comment.created_at|timesince }} ago</div>
+        <p class="activity-comment-text">{{ comment.text|truncatechars:110 }}</p>
+      </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+
+  {% if liked_articles %}
+  <div class="profile-section">
+    <div class="section-header">
+      <span class="section-title">Articles you liked</span>
+      <span class="section-count">{{ liked_articles|length }}</span>
+    </div>
+    <div class="section-divider"></div>
+    {% for article in liked_articles %}
+      <div class="activity-item">
+        <a href="{% url 'article_detail' article.pk %}">{{ article.title }}</a>
+        <div class="activity-meta">By {{ article.author.username }}</div>
+      </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const fileInput = document.querySelector('input[name="profile_picture"]');
+    let profileImg = document.getElementById('profile-img');
+    const profileFallback = document.getElementById('profile-fallback');
+    const overlay = document.getElementById('upload-overlay');
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    if (fileInput) {
+        fileInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const file = this.files[0];
+                
+                // 1. Instant Preview
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    if (profileImg) {
+                        profileImg.src = e.target.result;
+                        profileImg.style.display = 'block';
+                        if (profileFallback) profileFallback.style.display = 'none';
+                    } else if (profileFallback) {
+                        // Agar pehle image nahi thi, toh fallback ko hata kar img tag bana do
+                        const newImg = document.createElement('img');
+                        newImg.src = e.target.result;
+                        newImg.className = 'profile-avatar-large';
+                        newImg.id = 'profile-img';
+                        profileFallback.parentNode.replaceChild(newImg, profileFallback);
+                        profileImg = newImg;
+                    }
+                };
+                reader.readAsDataURL(file);
+
+                // 2. Auto Upload via AJAX (Bina page refresh ke)
+                uploadFileViaAjax(file);
+            }
+        });
+    }
+
+    function uploadFileViaAjax(file) {
+        // Show Loading Spinner
+        overlay.classList.add('active', 'loading');
+        overlay.classList.remove('success');
+
+        const formData = new FormData();
+        formData.append('profile_picture', file);
+        formData.append('csrfmiddlewaretoken', csrfToken);
+
+        fetch(window.location.href, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest' // Django ko batata hai ki ye AJAX hai
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Show Green Checkmark
+                overlay.classList.remove('loading');
+                overlay.classList.add('success');
+                
+                // Update actual image URL with cache buster so browser fetches new one
+                if (data.new_image_url && profileImg) {
+                    profileImg.src = data.new_image_url + '?v=' + data.cache_buster;
+                }
+                
+                // Hide overlay after 1.5 seconds smoothly
+                setTimeout(() => {
+                    overlay.classList.remove('active', 'success');
+                }, 1500);
+            } else {
+                alert('Upload failed. Please try again.');
+                overlay.classList.remove('active', 'loading');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Network error during upload.');
+            overlay.classList.remove('active', 'loading');
+        });
+    }
+});
+</script>
+{% endblock %}
