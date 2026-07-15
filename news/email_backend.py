@@ -33,11 +33,11 @@ class BrevoAPIEmailBackend(BaseEmailBackend):
             if not html_content:
                 html_content = f"<p>{text_content}</p>".replace('\n', '<br>')
 
-            # FIXED: Explicitly using the verified email and name
+            # fixed: explicitly using the verified email and name
             payload = {
                 "sender": {
                     "name": "The Signal",
-                    "email": "thesignalset@gmail.com"  # Ye wahi email hai jo tune Brevo me verify kiya tha
+                    "email": "thesignalset@gmail.com"  
                 },
                 "to": [{"email": email} for email in message.to],
                 "subject": message.subject,

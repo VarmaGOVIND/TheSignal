@@ -846,6 +846,7 @@ def admin_warn_content(request, content_type, pk):
 
         #send warning email with safety net
         try:
+            print(f"🚨 DEBUG: Trying to send warn email to -> {target_user.email}")
             if target_user.email:
                 subject = "Warning from Admin - The Signal"
 
