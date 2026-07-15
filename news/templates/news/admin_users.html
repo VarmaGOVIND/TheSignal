@@ -190,6 +190,18 @@
     font-size: 12px;
     color: var(--text-muted);
   }
+    .user-name-link {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent, #2563eb) !important;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    display: block;
+  }
+  .user-name-link:hover {
+    opacity: 0.7;
+    text-decoration: underline;
+  }
 
   
   .user-actions { display: flex; gap: 5px; justify-content: flex-end; flex-wrap: wrap; }
@@ -383,7 +395,9 @@
           {{ u.username|slice:":2"|upper }}
         </div>
         <div class="user-name-block">
-          <div class="user-fullname">{{ u.get_full_name|default:u.username }}</div>
+          <a href="{% url 'user_profile' u.id %}" class="user-name-link">
+            {{ u.get_full_name|default:u.username }}
+          </a>
           <div class="user-handle">@{{ u.username }}</div>
         </div>
       </div>
@@ -391,10 +405,8 @@
       
       <div class="user-email">{{ u.email }}</div>
 
-      
       <div class="user-joined">{{ u.date_joined|date:"M d, Y" }}</div>
 
-      
       <div>
         {% if u.is_blocked %}
           <span class="user-role-badge badge-blocked">BLOCKED</span>

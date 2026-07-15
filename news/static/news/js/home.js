@@ -25,3 +25,21 @@ function toggleLike(e, articleId) {
     window.location.href = window.DjangoConfig.loginUrl + '?next=' + encodeURIComponent(window.location.pathname);
   }
 }
+function toggleDateDropdown() {
+        const menu = document.getElementById('date-dropdown-menu');
+        const form = document.getElementById('custom-date-form');
+        menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        form.style.display = 'none';
+    }
+
+    function showCustomDateForm() {
+        document.getElementById('date-dropdown-menu').style.display = 'none';
+        document.getElementById('custom-date-form').style.display = 'block';
+    }
+
+    window.onclick = function(event) {
+        if (!event.target.matches('#date-filter-btn') && !event.target.closest('.date-filter-wrapper')) {
+            document.getElementById('date-dropdown-menu').style.display = 'none';
+            document.getElementById('custom-date-form').style.display = 'none';
+        }
+    }

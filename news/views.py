@@ -6,7 +6,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
-
+from .utils import generate_unsubscribe_token
 
 from django.http import JsonResponse, HttpResponseForbidden , HttpResponse
 from django.views.decorators.http import require_POST
@@ -63,6 +63,25 @@ def home(request):
             is_active=True
         ).exists()
 
+    date_filter = request.GET.get('date_filter', 'all')
+    today = timezone.now().date()
+
+    if date_filter == 'today':
+        articles = articles.filter(created_at__date=today)
+    elif date_filter == 'week':
+        articles = articles.filter(created_at__date__gte=today - timedelta(days=7))
+    elif date_filter == 'month':
+        articles = articles.filter(created_at__date__gte=today - timedelta(days=30))
+    elif date_filter == 'year':
+        articles = articles.filter(created_at__date__gte=today - timedelta(days=365))
+    elif date_filter == 'custom':
+        from_date = request.GET.get('from_date')
+        to_date = request.GET.get('to_date')
+        if from_date:
+            articles = articles.filter(created_at__date__gte=from_date)
+        if to_date:
+            articles = articles.filter(created_at__date__lte=to_date)
+
     if query:
             from django.db.models import Q
             articles = articles.filter(
@@ -84,7 +103,9 @@ def home(request):
         'active':    topic,
         'trending':  trending,
         'featured':  articles.first(),
-        'user_is_subscribed': user_is_subscribed,  
+        'user_is_subscribed': user_is_subscribed,
+        'date_filter': date_filter,
+        'query': query,  
     })
 
 
@@ -116,11 +137,12 @@ def login_view(request):
                 login(request, u)
                 remember_me = request.POST.get('remember')
                 if remember_me:
-                    request.session.set_expiry(1209600)  # 2 weeks (14 days)
+                    request.session.set_expiry(1209600)  
+                    #2 weeks (14 days)
                 else:
-                    request.session.set_expiry(0)  # Browser close hone par expire
-                
-                # Force session save
+                    request.session.set_expiry(0)
+                    #browser close it will expire
+            
                 request.session.modified = True
                 
                 return redirect('admin_dashboard' if u.is_admin_role else 'home')
@@ -394,7 +416,8 @@ def admin_article_create(request):
         if request.user.role == 'admin':
             return redirect('admin_dashboard')
         else:
-            return redirect('home')  # Author go to home page
+            return redirect('home')  
+        #author go to home page
     
     from news.models import TOPIC_CHOICES
     categories = [c[0] for c in TOPIC_CHOICES]
@@ -554,7 +577,7 @@ def newsletter_unsubscribe(request, token):
         return render(request, 'news/unsubscribe_invalid.html')
 
 def unsubscribe_success(request):
-    """Unsubscribe hone ke baad success page"""
+    """Success page shown after successful unsubscription"""
     return render(request, 'news/unsubscribe_success.html')
 
 
@@ -821,10 +844,10 @@ def admin_warn_content(request, content_type, pk):
             log(request.user, f"Warned user @{target_user.username} regarding a comment.")
             messages.warning(request, f"Warning sent to @{target_user.username} about their comment.")
 
-        # Send warning email to the user (if email exists)
+        #send warning email with safety net
         try:
             if target_user.email:
-                subject = "️ Warning from Admin - The Signal"
+                subject = "Warning from Admin - The Signal"
 
                 if content_type == 'article':
                     content_info = f"Article: {content.title[:100]}"
@@ -846,7 +869,6 @@ Best Regards,
 The Admin Team
 The Signal
 """
-
                 send_mail(
                     subject=subject,
                     message=message,
@@ -854,12 +876,12 @@ The Signal
                     recipient_list=[target_user.email],
                     fail_silently=False,
                 )
-                messages.success(request, f" Warning email successfully sent to {target_user.email} mail ")
+                messages.success(request, f"Warning email successfully sent to {target_user.email}")
             else:
-                messages.warning(request, f"️ User @{target_user.username} has no email on file. Warning logged only.")
+                messages.warning(request, f"User @{target_user.username} has no email on file. Warning logged only.")
 
         except Exception as e:
-            messages.error(request, f" Failed to send warning email: {str(e)}")
+            messages.warning(request, "User has been warned, but the email could not be sent due to a server timeout. Please check manually later.")
             print(f"Warning email error: {e}")
 
         return redirect(request.META.get('HTTP_REFERER', 'home'))
@@ -868,7 +890,7 @@ The Signal
 
 @user_passes_test(is_admin)
 def admin_delete_content(request, content_type, pk):
-    """Admin kisi bhi article ya comment ko delete kar sakta hai"""
+    """Admin can delete any article or comment"""
     if request.method == 'POST':
         if content_type == 'article':
             content = get_object_or_404(Article, pk=pk)

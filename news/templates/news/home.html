@@ -92,12 +92,41 @@
        {% if request.GET.q %}
         🔍 Search results for: "<strong>{{ request.GET.q }}</strong>" 
         <a href="{% url 'home' %}" style="margin-left:10px; color:var(--accent); font-size:11px; text-decoration:underline;">Clear Search</a>
-      {% elif active_topic == 'All' %}
-        Latest Stories
+      {% elif active == 'All' %}
+        Latest Articles
       {% else %}
-        {{ active_topic }}
+        {{ active }}
       {% endif %}
     </div>
+    <div class="date-filter-wrapper" style="position: relative; display: inline-block; margin: 10px 0;">
+    <button type="button" class="filter-btn" id="date-filter-btn" onclick="toggleDateDropdown()" style="background: var(--bg-card); border: 1px solid var(--border); color: var(--text); padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+        📅 Filter <span style="font-size: 10px;">▼</span>
+    </button>
+    
+    <div id="date-dropdown-menu" class="dropdown-content" style="display: none; position: absolute; top: 110%; left: 0; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 5px 0; min-width: 140px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1000;">
+        <a href="?{% if query %}q={{ query }}{% endif %}{% if active != 'All' %}&topic={{ active }}{% endif %}&date_filter=all" style="display: block; padding: 8px 12px; font-size: 12px; color: var(--text); text-decoration: none; {% if date_filter == 'all' %}background: var(--accent); color: #fff;{% endif %}">All</a>
+        <a href="?{% if query %}q={{ query }}{% endif %}{% if active != 'All' %}&topic={{ active }}{% endif %}&date_filter=today" style="display: block; padding: 8px 12px; font-size: 12px; color: var(--text); text-decoration: none; {% if date_filter == 'today' %}background: var(--accent); color: #fff;{% endif %}">Today</a>
+        <a href="?{% if query %}q={{ query }}{% endif %}{% if active != 'All' %}&topic={{ active }}{% endif %}&date_filter=week" style="display: block; padding: 8px 12px; font-size: 12px; color: var(--text); text-decoration: none; {% if date_filter == 'week' %}background: var(--accent); color: #fff;{% endif %}">This Week</a>
+        <a href="?{% if query %}q={{ query }}{% endif %}{% if active != 'All' %}&topic={{ active }}{% endif %}&date_filter=month" style="display: block; padding: 8px 12px; font-size: 12px; color: var(--text); text-decoration: none; {% if date_filter == 'month' %}background: var(--accent); color: #fff;{% endif %}">This Month</a>
+        <a href="?{% if query %}q={{ query }}{% endif %}{% if active != 'All' %}&topic={{ active }}{% endif %}&date_filter=year" style="display: block; padding: 8px 12px; font-size: 12px; color: var(--text); text-decoration: none; {% if date_filter == 'year' %}background: var(--accent); color: #fff;{% endif %}">This Year</a>
+        <div style="height: 1px; background: var(--border); margin: 4px 0;"></div>
+        <button type="button" onclick="showCustomDateForm()" style="width:100%; text-align:left; background:none; border:none; padding: 8px 12px; cursor:pointer; color: var(--text); font-size: 12px;">Custom Range...</button>
+    </div>
+
+    <!-- Custom Date Form (Hidden) -->
+    <div id="custom-date-form" style="display:none; position:absolute; top: 110%; left: 0; background: var(--bg-card); border: 1px solid var(--border); padding: 12px; border-radius: 8px; z-index: 1000; width: 200px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+        <form method="GET" action="">
+            <input type="hidden" name="q" value="{{ query }}">
+            <input type="hidden" name="topic" value="{{ active }}">
+            <input type="hidden" name="date_filter" value="custom">
+            <label style="font-size:10px; color:var(--text-muted); text-transform: uppercase;">From:</label>
+            <input type="date" name="from_date" class="form-input" style="width:100%; margin-bottom:8px; font-size:12px; padding: 5px;">
+            <label style="font-size:10px; color:var(--text-muted); text-transform: uppercase;">To:</label>
+            <input type="date" name="to_date" class="form-input" style="width:100%; margin-bottom:10px; font-size:12px; padding: 5px;">
+            <button type="submit" class="btn btn-primary btn-sm" style="width:100%; font-size: 11px;">Apply</button>
+        </form>
+    </div>
+</div>
 
     <div class="article-grid">
       {% for article in page.object_list %}
@@ -183,14 +212,16 @@
     {% if page.has_other_pages %}
     <div class="pagination">
       {% if page.has_previous %}
-        <a href="?page={{ page.previous_page_number }}&topic={{ active_topic }}" class="page-link">← Prev</a>
+        <a href="?page={{ page.previous_page_number }}{% if active != 'All' %}&topic={{ active }}{% endif %}{% if date_filter != 'all' %}&date_filter={{ date_filter }}{% endif %}{% if query %}&q={{ query }}{% endif %}" class="page-link">← Prev</a>
       {% endif %}
+      
       {% for num in page.paginator.page_range %}
-        <a href="?page={{ num }}&topic={{ active_topic }}"
+        <a href="?page={{ num }}{% if active != 'All' %}&topic={{ active }}{% endif %}{% if date_filter != 'all' %}&date_filter={{ date_filter }}{% endif %}{% if query %}&q={{ query }}{% endif %}"
            class="page-link {% if num == page.number %}current{% endif %}">{{ num }}</a>
       {% endfor %}
+      
       {% if page.has_next %}
-        <a href="?page={{ page.next_page_number }}&topic={{ active_topic }}" class="page-link">Next →</a>
+        <a href="?page={{ page.next_page_number }}{% if active != 'All' %}&topic={{ active }}{% endif %}{% if date_filter != 'all' %}&date_filter={{ date_filter }}{% endif %}{% if query %}&q={{ query }}{% endif %}" class="page-link">Next →</a>
       {% endif %}
     </div>
     {% endif %}
