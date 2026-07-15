@@ -2,6 +2,7 @@ import hashlib,csv
 import time
 from datetime import timedelta, date
 from django.utils import timezone
+from django.utils.timesince import timesince
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -252,9 +253,6 @@ def like_article(request, pk):
     return JsonResponse({'liked': liked, 'count': article.likes.count()})
 
 
-
-
-
 @user_passes_test(is_author_or_admin)
 def admin_dashboard(request):
     if request.user.role == 'author':
@@ -263,13 +261,16 @@ def admin_dashboard(request):
         top_articles = articles.order_by('-views')[:5]
         all_comments = Comment.objects.filter(article__author=request.user).select_related('article', 'author').order_by('-created_at')[:20]
         recent_activity = UserActivity.objects.filter(user=request.user).order_by('-created_at')[:15]
+        total_activity_count = UserActivity.objects.filter(user=request.user).count()
     else:
         articles = Article.objects.annotate(num_likes=Count('likes')).order_by('-created_at')
         categories_data = Article.objects.values('category').annotate(count=Count('id')).order_by('-count')
         top_articles = articles.order_by('-views')[:5]
         all_comments = Comment.objects.select_related('article', 'author').order_by('-created_at')[:20]
         recent_activity = UserActivity.objects.order_by('-created_at')[:15]
+        total_activity_count = UserActivity.objects.count()
     
+    has_more_activities = total_activity_count > 15
     
     cat_labels = [item['category'] for item in categories_data]
     cat_counts = [item['count'] for item in categories_data]
@@ -277,7 +278,6 @@ def admin_dashboard(request):
     art_labels = [a.title[:20] + '...' if len(a.title) > 20 else a.title for a in top_articles]
     art_views = [a.views for a in top_articles]
 
-    
     today = date.today()
     last_7_days = [today - timedelta(days=i) for i in range(6, -1, -1)]
     line_labels = [d.strftime('%b %d') for d in last_7_days]
@@ -292,9 +292,7 @@ def admin_dashboard(request):
 
     categories = [c[0] for c in TOPIC_CHOICES]
     all_users = User.objects.all().order_by('username')
-    
     breaking_news_items = BreakingNews.objects.all().order_by('-order', '-created_at')
-    
     
     if request.user.role == 'author':
         all_articles_for_breaking = Article.objects.filter(author=request.user).order_by('-created_at')
@@ -310,6 +308,7 @@ def admin_dashboard(request):
         'top_articles': top_articles,
         'all_comments': all_comments,
         'recent_activity': recent_activity,
+        'has_more_activities': has_more_activities,
         'categories': categories,
         'all_users': all_users,
         'cat_labels': cat_labels,
@@ -322,7 +321,6 @@ def admin_dashboard(request):
         'all_articles_for_breaking': all_articles_for_breaking,
     }
     
-    
     if request.user.role == 'admin':
         context.update({
             'total_users': User.objects.count(),
@@ -332,14 +330,12 @@ def admin_dashboard(request):
             'users': User.objects.exclude(pk=request.user.pk).order_by('-date_joined'),
         })
     else:
-        
         context.update({
             'total_articles': Article.objects.filter(author=request.user).count(),
             'total_comments': Comment.objects.filter(article__author=request.user).count(),
         })
 
     return render(request, 'news/admin_dashboard.html', context)
-
 
 @user_passes_test(is_author_or_admin)
 def admin_breaking_news_add(request):
@@ -982,6 +978,36 @@ def contact_page(request):
 
 def privacy_page(request):
     return render(request, 'news/privacy.html')
+
+@user_passes_test(is_author_or_admin)
+def load_more_activities(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Unauthorized'}, status=403)
+    
+    offset = int(request.GET.get('offset', 15))
+    limit = 15
+    
+    if request.user.role == 'author':
+        activities = UserActivity.objects.filter(user=request.user).order_by('-created_at')[offset:offset+limit]
+        total_count = UserActivity.objects.filter(user=request.user).count()
+    else:
+        activities = UserActivity.objects.order_by('-created_at')[offset:offset+limit]
+        total_count = UserActivity.objects.count()
+    
+    activities_data = []
+    for act in activities:
+        activities_data.append({
+            'user': act.user.username if act.user else 'System',
+            'action': act.action,
+            'time_ago': timesince(act.created_at, timezone.now()) + ' ago'
+        })
+    
+    has_more = total_count > (offset + limit)
+    
+    return JsonResponse({
+        'activities': activities_data,
+        'has_more': has_more
+    })
 
 def terms_page(request):
     return render(request, 'news/terms.html')

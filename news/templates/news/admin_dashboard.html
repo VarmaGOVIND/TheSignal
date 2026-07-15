@@ -402,19 +402,28 @@
     <div id="panel-activity" style="display:none;">
       <div class="stats-card">
         <div class="stats-card-title">📋 {% if user.role == 'admin' %}Recent Activity Log{% else %}My Activity{% endif %}</div>
-        <div class="activity-list">
-          {% if recent_activity %}
-            {% for act in recent_activity %}
-            <div class="activity-item">
-              <div class="activity-dot"></div>
-              <span class="activity-text"><strong>@{{ act.user.username }}</strong> — {{ act.action }}</span>
-              <span class="activity-time">{{ act.created_at|timesince }} ago</span>
-            </div>
-            {% endfor %}
-          {% else %}
-            <div style="color:var(--text-muted);font-size:13px;padding:20px;text-align:center;">📭 No activity logged yet.</div>
-          {% endif %}
+        
+        <div id="activity-container">
+          <div class="activity-list" id="activity-list">
+            {% if recent_activity %}
+              {% for act in recent_activity %}
+              <div class="activity-item">
+                <div class="activity-dot"></div>
+                <span class="activity-text"><strong>@{{ act.user.username }}</strong> — {{ act.action }}</span>
+                <span class="activity-time">{{ act.created_at|timesince }} ago</span>
+              </div>
+              {% endfor %}
+            {% else %}
+              <div class="no-activity-msg">📭 No activity logged yet.</div>
+            {% endif %}
+          </div>
         </div>
+
+        {% if has_more_activities %}
+        <div class="load-more-wrapper">
+          <button id="load-more-activity" class="btn btn-ghost btn-sm">Load More Activity</button>
+        </div>
+        {% endif %}
       </div>
     </div>
 

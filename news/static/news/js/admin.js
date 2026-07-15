@@ -141,3 +141,55 @@ showTab = function(name) {
   originalShowTab(name);
   window.location.hash = name;
 };
+
+
+document.addEventListener('DOMContentLoaded', function() {
+  const loadMoreBtn = document.getElementById('load-more-activity');
+  const activityList = document.getElementById('activity-list');
+
+  if (loadMoreBtn && activityList) {
+    let offset = activityList.children.length; 
+    let isLoading = false;
+
+    loadMoreBtn.addEventListener('click', function() {
+      if (isLoading) return;
+      
+      isLoading = true;
+      loadMoreBtn.textContent = 'Loading...';
+      loadMoreBtn.disabled = true;
+
+      fetch(`/admin-panel/activity/load-more/?offset=${offset}`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.activities && data.activities.length > 0) {
+            data.activities.forEach(act => {
+              const itemHTML = `
+                <div class="activity-item">
+                  <div class="activity-dot"></div>
+                  <span class="activity-text"><strong>@${act.user}</strong> — ${act.action}</span>
+                  <span class="activity-time">${act.time_ago}</span>
+                </div>
+              `;
+              activityList.insertAdjacentHTML('beforeend', itemHTML);
+            });
+
+            offset += data.activities.length;
+
+            if (!data.has_more) {
+              loadMoreBtn.parentElement.style.display = 'none';
+            }
+          }
+          
+          isLoading = false;
+          loadMoreBtn.textContent = 'Load More Activity';
+          loadMoreBtn.disabled = false;
+        })
+        .catch(error => {
+          console.error('Error loading activities:', error);
+          isLoading = false;
+          loadMoreBtn.textContent = 'Load More Activity';
+          loadMoreBtn.disabled = false;
+        });
+    });
+  }
+});

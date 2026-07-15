@@ -37,7 +37,7 @@ urlpatterns = [
     path('article/<int:pk>/like/',views.like_article,   name='like_article'),
     path('newsletter/subscribe/', views.newsletter_subscribe, name='newsletter_subscribe'),
     # Admin
-    path('admin-panel/',                      views.admin_dashboard,      name='admin_dashboard'),
+    path('admin-panel/activity/load-more/',   views.load_more_activities, name='load_more_activities'),
     path('admin-panel/article/new/',          views.admin_article_create, name='admin_article_create'),
     path('admin-panel/article/<int:pk>/edit/',views.admin_article_edit,   name='admin_article_edit'),
     path('admin-panel/article/<int:pk>/del/', views.admin_article_delete, name='admin_article_delete'),
