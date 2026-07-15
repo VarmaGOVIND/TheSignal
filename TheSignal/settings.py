@@ -153,13 +153,8 @@ LOGIN_REDIRECT_URL = '/'
 # WhiteNoise Configuration
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_TIMEOUT = 10 
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'thesignalset@gmail.com'
-EMAIL_HOST_PASSWORD = os.getenv('GMAIL_APP_PASSWORD')
+EMAIL_BACKEND = 'news.email_backend.BrevoAPIEmailBackend'
+BREVO_API_KEY = os.getenv('BREVO_API_KEY')
 DEFAULT_FROM_EMAIL = 'The Signal <thesignalset@gmail.com>'
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
