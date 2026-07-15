@@ -159,6 +159,36 @@ def register_view(request):
     if request.method == 'POST' and form.is_valid():
         user = form.save()
         login(request, user)
+        try:
+            subject = "Welcome to The Signal! 📰 (Important: Please Read)"
+            message = f"""Hello {user.get_full_name() or user.username},
+
+Welcome to The Signal! We are thrilled to have you on board.
+
+To ensure you receive important updates, password reset links, and community notifications directly in your Primary Inbox, please take a quick second to:
+
+1. Check your Spam or Promotions folder for this email.
+2. Click "Report not spam" or drag this email to your Primary tab.
+3. (Optional) Add 'thesignalset@gmail.com' to your contacts.
+
+This simple step guarantees you never miss out on important alerts from our admin team.
+
+Happy reading and writing!
+
+Best Regards,
+The Admin Team
+The Signal
+"""
+            send_mail(
+                subject=subject,
+                message=message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[user.email],
+                fail_silently=True,  
+            )
+            print(f"✅ Welcome email sent to {user.email}")
+        except Exception as e:
+            print(f"❌ Welcome email failed for {user.email}: {e}")
         return redirect('home')
     return render(request, 'news/register.html', {'form': form})
 
