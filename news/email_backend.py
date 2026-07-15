@@ -33,8 +33,12 @@ class BrevoAPIEmailBackend(BaseEmailBackend):
             if not html_content:
                 html_content = f"<p>{text_content}</p>".replace('\n', '<br>')
 
+            # FIXED: Explicitly using the verified email and name
             payload = {
-                "sender": {"email": message.from_email or getattr(settings, 'DEFAULT_FROM_EMAIL', 'thesignalset@gmail.com')},
+                "sender": {
+                    "name": "The Signal",
+                    "email": "thesignalset@gmail.com"  # Ye wahi email hai jo tune Brevo me verify kiya tha
+                },
                 "to": [{"email": email} for email in message.to],
                 "subject": message.subject,
                 "textContent": text_content,
@@ -45,6 +49,7 @@ class BrevoAPIEmailBackend(BaseEmailBackend):
                 response = requests.post(url, json=payload, headers=headers, timeout=10)
                 if response.status_code in [200, 201, 202, 204]:
                     num_sent += 1
+                    print(f"✅ Email sent successfully to {message.to}")
                 else:
                     print(f"❌ Brevo API Error: {response.status_code} - {response.text}")
             except Exception as e:
