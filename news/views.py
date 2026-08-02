@@ -129,26 +129,54 @@ def article_detail(request, pk):
 
 def login_view(request):
     error = ''
+    
     if request.method == 'POST':
-        u = authenticate(request, username=request.POST['username'], password=request.POST['password'])
+        lock_until = request.session.get('login_lock_until', 0)
+        
+        if time.time() < lock_until:
+            remaining_mins = int((lock_until - time.time()) / 60) + 1
+            error = f'Too many failed attempts. Please wait {remaining_mins} minute(s) or reset your password.'
+            return render(request, 'news/login.html', {'error': error})
+
+        username = request.POST.get('username', '').strip()
+        password = request.POST.get('password', '')
+        u = authenticate(request, username=username, password=password)
+        
         if u:
             if u.is_blocked:
                 error = 'Your account has been blocked.'
             else:
+                request.session['login_attempts'] = 0
+                request.session['login_lock_until'] = 0
+                
                 login(request, u)
                 remember_me = request.POST.get('remember')
                 if remember_me:
-                    request.session.set_expiry(1209600)  
-                    #2 weeks (14 days)
+                    request.session.set_expiry(1209600)
                 else:
                     request.session.set_expiry(0)
-                    #browser close it will expire
-            
-                request.session.modified = True
                 
+                request.session.modified = True
                 return redirect('admin_dashboard' if u.is_admin_role else 'home')
         else:
-            error = 'Invalid credentials.'
+            attempts = request.session.get('login_attempts', 0) + 1
+            request.session['login_attempts'] = attempts
+            
+            if attempts >= 5:
+                request.session['login_lock_until'] = time.time() + 900
+                error = 'Too many failed attempts. Please wait 15 minutes or reset your password.'
+            else:
+                error = 'Invalid credentials.'
+            
+            try:
+                failed_user = User.objects.get(username=username)
+                UserActivity.objects.create(
+                    user=failed_user, 
+                    action=f"Failed login attempt from IP: {request.META.get('REMOTE_ADDR', 'Unknown')}"
+                )
+            except User.DoesNotExist:
+                pass
+                
     return render(request, 'news/login.html', {'error': error})
 
 def logout_view(request):

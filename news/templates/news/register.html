@@ -4,13 +4,11 @@
 {% block content %}
 <style>
   .ticker, .topic-nav, .navbar { display: none; }
-
   .register-page {
     min-height: 100vh; display: grid;
     grid-template-columns: 1fr 1fr;
     background: var(--bg); transition: background .35s;
   }
-
   .reg-hero {
     position: relative; overflow: hidden;
     background: #0a0a0b;
@@ -27,7 +25,6 @@
     font-family: Georgia, serif; font-size: 34px; font-weight: 900;
     color: #f0ede6; letter-spacing: -.02em; margin-bottom: 14px;
   }
-
   .benefits { display: flex; flex-direction: column; gap: 12px; margin-bottom: 28px; }
   .benefit-item { display: flex; align-items: center; gap: 10px; }
   .benefit-icon {
@@ -36,9 +33,7 @@
     display: flex; align-items: center; justify-content: center; font-size: 14px;
   }
   .benefit-text { font-size: 13px; color: #ccc; }
-
   .reg-hero-sub { font-size: 12px; color: #555; }
-
   .reg-form-panel {
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
@@ -46,7 +41,6 @@
     background: var(--bg); transition: background .35s;
     overflow-y: auto;
   }
-
   .reg-card { width: 100%; max-width: 420px; }
   .reg-title {
     font-family: Georgia, serif; font-size: 24px; font-weight: 900;
@@ -57,32 +51,31 @@
   .pw-strength-bar { height: 4px; border-radius: 4px; background: var(--border); margin-top: 6px; overflow: hidden; }
   .pw-strength-fill { height: 4px; border-radius: 4px; transition: width .3s, background .3s; width: 0; }
   .pw-strength-label { font-size: 10px; color: var(--text-muted); margin-top: 4px; }
-  .avatar-picker { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
-  .avatar-option {
-    width: 36px; height: 36px; border-radius: 50%; cursor: none;
-    border: 2px solid var(--border2); display: flex; align-items: center;
-    justify-content: center; font-size: 16px; transition: all .15s;
-  }
-  .avatar-option:hover, .avatar-option.selected { border-color: var(--accent); transform: scale(1.1); }
   .terms-row { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 20px; }
   .terms-row input { width: auto; margin-top: 2px; accent-color: var(--accent); flex-shrink: 0; }
-  .terms-row label { font-size: 12px; color: var(--text-muted); line-height: 1.5; cursor: none; }
+  .terms-row label { font-size: 12px; color: var(--text-muted); line-height: 1.5; cursor: pointer; }
   .terms-row a { color: var(--accent); }
-
   .reg-submit {
     width: 100%; padding: 12px; background: var(--accent);
     color: var(--accent-tx); border: none; border-radius: 8px;
     font-family: inherit; font-size: 14px; font-weight: 700;
-    cursor: none; transition: opacity .18s; margin-bottom: 16px;
+    cursor: pointer; transition: opacity .18s; margin-bottom: 16px;
   }
   .reg-submit:hover { opacity: .85; }
-
   .reg-login { font-size: 12px; color: var(--text-muted); text-align: center; }
   .reg-login a { color: var(--accent); font-weight: 600; }
-
- 
   .field-errors { list-style: none; margin-top: 4px; }
   .field-errors li { font-size: 11px; color: #ff4444; }
+  
+  .pw-toggle {
+    position: absolute; right: 11px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; 
+    color: var(--text-muted); cursor: pointer;
+    transition: color .15s;
+    display: flex; align-items: center; justify-content: center;
+    padding: 4px;
+  }
+  .pw-toggle:hover { color: var(--accent); }
 
   @media (max-width: 700px) {
     .register-page { grid-template-columns: 1fr; }
@@ -119,7 +112,6 @@
       <p class="reg-hero-sub">Already 42,800 readers. Free forever.</p>
     </div>
   </div>
-
 
   <div class="reg-form-panel">
     <div style="position:absolute;top:20px;right:20px;">
@@ -186,7 +178,16 @@
             <input type="password" name="password1" id="pw1" class="form-input"
               style="padding-right:40px;" placeholder="Min 8 characters" required
               oninput="checkStrength(this.value)">
-            <button type="button" class="pw-toggle" onclick="togglePw('pw1',this)">👁</button>
+            <button type="button" class="pw-toggle" onclick="togglePw('pw1', this)">
+              <svg class="eye-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+              <svg class="eye-off-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                <line x1="1" y1="1" x2="23" y2="23"></line>
+              </svg>
+            </button>
           </div>
           <div class="pw-strength-bar"><div class="pw-strength-fill" id="pw-bar"></div></div>
           <div class="pw-strength-label" id="pw-label">Enter a password</div>
@@ -198,7 +199,16 @@
             <input type="password" name="password2" id="pw2" class="form-input"
               style="padding-right:40px;" placeholder="Repeat password" required
               oninput="checkMatch()">
-            <button type="button" class="pw-toggle" onclick="togglePw('pw2',this)">👁</button>
+            <button type="button" class="pw-toggle" onclick="togglePw('pw2', this)">
+              <svg class="eye-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+              <svg class="eye-off-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                <line x1="1" y1="1" x2="23" y2="23"></line>
+              </svg>
+            </button>
           </div>
           <div id="pw-match" style="font-size:11px;margin-top:4px;"></div>
           {% if form.password2.errors %}
@@ -210,8 +220,8 @@
           <input type="checkbox" id="terms" name="terms" required>
           <label for="terms">
             I agree to The Signal's
-            <a href="#">Terms of Service</a> and
-            <a href="#">Privacy Policy</a>
+            <a href="{% url 'terms' %}">Terms of Service</a> and
+            <a href="{% url 'privacy' %}">Privacy Policy</a>
           </label>
         </div>
 
@@ -224,26 +234,35 @@
 </div>
 
 <script>
-
   function togglePw(id, btn) {
     const f = document.getElementById(id);
-    f.type = f.type === 'password' ? 'text' : 'password';
-    btn.textContent = f.type === 'password' ? '👁' : '🙈';
+    const eyeIcon = btn.querySelector('.eye-icon');
+    const eyeOffIcon = btn.querySelector('.eye-off-icon');
+    
+    if (f.type === 'password') {
+      f.type = 'text';
+      eyeIcon.style.display = 'none';
+      eyeOffIcon.style.display = 'block';
+    } else {
+      f.type = 'password';
+      eyeIcon.style.display = 'block';
+      eyeOffIcon.style.display = 'none';
+    }
   }
 
   function checkStrength(val) {
     const bar = document.getElementById('pw-bar');
     const lbl = document.getElementById('pw-label');
     let score = 0;
-    if (val.length >= 8)              score++;
-    if (/[A-Z]/.test(val))            score++;
-    if (/[0-9]/.test(val))            score++;
-    if (/[^A-Za-z0-9]/.test(val))    score++;
+    if (val.length >= 8) score++;
+    if (/[A-Z]/.test(val)) score++;
+    if (/[0-9]/.test(val)) score++;
+    if (/[^A-Za-z0-9]/.test(val)) score++;
     const states = [
-      {w:'0%',   c:'#333',    t:'Enter a password'},
-      {w:'25%',  c:'#ff4444', t:'Weak'},
-      {w:'50%',  c:'#ffaa47', t:'Fair'},
-      {w:'75%',  c:'#e8ff47', t:'Good'},
+      {w:'0%', c:'#333', t:'Enter a password'},
+      {w:'25%', c:'#ff4444', t:'Weak'},
+      {w:'50%', c:'#ffaa47', t:'Fair'},
+      {w:'75%', c:'#e8ff47', t:'Good'},
       {w:'100%', c:'#47ff8f', t:'Strong ✓'},
     ];
     const s = states[score];
@@ -257,7 +276,7 @@
     const el = document.getElementById('pw-match');
     if (!p2) { el.textContent = ''; return; }
     if (p1 === p2) { el.textContent = '✓ Passwords match'; el.style.color = '#47ff8f'; }
-    else           { el.textContent = '✗ Passwords do not match'; el.style.color = '#ff4444'; }
+    else { el.textContent = '✗ Passwords do not match'; el.style.color = '#ff4444'; }
   }
 
   function checkUsername(val) {
@@ -267,6 +286,7 @@
     if (!/^[a-z0-9_]+$/i.test(val)) { el.textContent = '✗ Letters, numbers and _ only'; el.style.color = '#ff4444'; return; }
     el.textContent = '✓ Looks good'; el.style.color = '#47ff8f';
   }
+
   const regBtn = document.getElementById('theme-toggle-reg');
   function syncReg(t) {
     document.getElementById('reg-icon-l').textContent = t==='dark'?'🌙':'☀️';

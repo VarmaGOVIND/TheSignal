@@ -10,7 +10,6 @@
     background: var(--bg);
     transition: background .35s;
   }
-
   .login-hero {
     position: relative; overflow: hidden;
     background: #0a0a0b;
@@ -29,7 +28,6 @@
   }
   .login-hero-tagline { font-size: 15px; color: #888; line-height: 1.65; max-width: 380px; }
   .login-hero-tagline strong { color: #e8ff47; }
-
   .hero-headlines { margin-bottom: 32px; display: flex; flex-direction: column; gap: 10px; }
   .hero-headline-pill {
     display: inline-flex; align-items: center; gap: 8px;
@@ -43,7 +41,6 @@
   @keyframes heroFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
   .pill-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
   .pill-text { font-size: 12px; color: #ccc; }
-
   .login-form-panel {
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
@@ -53,7 +50,6 @@
   .login-theme-btn {
     position: absolute; top: 20px; right: 20px;
   }
-
   .login-card {
     width: 100%; max-width: 400px;
   }
@@ -62,39 +58,36 @@
     color: var(--text); margin-bottom: 4px; transition: color .35s;
   }
   .login-card-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 28px; }
-
   .input-icon-wrap { position: relative; }
   .input-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); font-size: 14px; color: var(--text-muted); pointer-events: none; }
   .input-with-icon { padding-left: 36px !important; }
-
   .pw-toggle {
     position: absolute; right: 11px; top: 50%; transform: translateY(-50%);
-    background: none; border: none; font-size: 14px;
-    color: var(--text-muted); cursor: none;
+    background: none; border: none; 
+    color: var(--text-muted); cursor: pointer;
     transition: color .15s;
+    display: flex; align-items: center; justify-content: center;
+    padding: 4px;
   }
   .pw-toggle:hover { color: var(--accent); }
-
   .remember-row {
     display: flex; align-items: center; justify-content: space-between;
     margin-bottom: 20px;
   }
-  .remember-label { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--text-muted); cursor: none; }
+  .remember-label { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--text-muted); cursor: pointer; }
   .remember-label input { width: auto; accent-color: var(--accent); }
-  .forgot-link { font-size: 12px; color: var(--accent); cursor: none; }
+  .forgot-link { font-size: 12px; color: var(--accent); cursor: pointer; }
   .forgot-link:hover { text-decoration: underline; }
-
   .login-submit {
     width: 100%; padding: 12px;
     background: var(--accent); color: var(--accent-tx);
     border: none; border-radius: 8px; font-family: inherit;
-    font-size: 14px; font-weight: 700; cursor: none;
+    font-size: 14px; font-weight: 700; cursor: pointer;
     transition: opacity .18s, transform .12s;
     margin-bottom: 16px;
   }
   .login-submit:hover { opacity: .88; }
   .login-submit:active { transform: scale(.98); }
-
   .login-submit.loading { opacity: .7; pointer-events: none; }
   .login-submit.loading::after {
     content: ' ⟳';
@@ -102,13 +95,11 @@
     animation: spin .7s linear infinite;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
-
   .login-divider {
     display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
   }
   .divider-line { flex: 1; height: 1px; background: var(--border); }
   .divider-text { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: .08em; }
-
   .demo-accounts {
     background: var(--input-bg); border: 1px solid var(--border);
     border-radius: 10px; padding: 14px 16px; margin-bottom: 20px;
@@ -117,18 +108,16 @@
   .demo-title { font-size: 10px; color: var(--text-muted); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 10px; }
   .demo-row {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 6px 0; border-bottom: 1px solid var(--border); cursor: none;
+    padding: 6px 0; border-bottom: 1px solid var(--border); cursor: pointer;
     transition: background .1s;
   }
   .demo-row:last-child { border-bottom: none; }
   .demo-row:hover { background: var(--border); border-radius: 6px; padding-left: 6px; }
   .demo-creds { font-size: 12px; color: var(--text-sub); }
   .demo-creds code { color: var(--text-muted); font-family: monospace; font-size: 11px; }
-
   .login-register { font-size: 12px; color: var(--text-muted); text-align: center; }
   .login-register a { color: var(--accent); font-weight: 600; }
   .login-register a:hover { text-decoration: underline; }
-
   .login-error {
     background: #3a1a1a; border: 1px solid #ff4444; border-radius: 8px;
     padding: 10px 14px; margin-bottom: 16px;
@@ -136,7 +125,6 @@
     display: flex; align-items: center; gap: 8px;
     animation: slideDown .3s ease;
   }
-
   @media (max-width: 700px) {
     .login-page { grid-template-columns: 1fr; }
     .login-hero  { display: none; }
@@ -146,9 +134,7 @@
 
 <div class="login-page">
   <div class="login-hero">
-    <img src="https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=900&q=80"
-         alt="hero" class="login-hero-img">
-
+    <img src="https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=900&q=80" alt="hero" class="login-hero-img">
     <div class="login-hero-content">
       <div class="hero-headlines">
         <div class="hero-headline-pill">
@@ -164,7 +150,6 @@
           <span class="pill-text">S&amp;P 500 surges 2.3% on Fed pause signal</span>
         </div>
       </div>
-
       <div class="login-hero-logo">THE SIGNAL</div>
       <p class="login-hero-tagline">
         The world's most important stories,<br>
@@ -184,7 +169,7 @@
     </div>
 
     <div class="login-card">
-      <h1 class="login-card-title">Welcome </h1>
+      <h1 class="login-card-title">Welcome</h1>
       <p class="login-card-sub">Sign in to continue reading and commenting</p>
 
       {% if error %}
@@ -219,7 +204,16 @@
             <input type="password" name="password" id="password-input"
               class="form-input input-with-icon" style="padding-right:40px;"
               placeholder="Enter your password" autocomplete="current-password" required>
-            <button type="button" class="pw-toggle" onclick="togglePassword()" id="pw-eye">👁</button>
+            <button type="button" class="pw-toggle" onclick="togglePassword()" id="pw-eye">
+              <svg id="eye-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+              <svg id="eye-off-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                <line x1="1" y1="1" x2="23" y2="23"></line>
+              </svg>
+            </button>
           </div>
         </div>
 
@@ -235,33 +229,6 @@
         </button>
       </form>
 
-      
-      <!--<div class="login-divider">
-        <div class="divider-line"></div>
-        <span class="divider-text">Demo Accounts</span>
-        <div class="divider-line"></div>
-      </div>
-
-      <div class="demo-accounts">
-        <div class="demo-title">Click to auto-fill</div>
-        <div class="demo-row" onclick="fillDemo('admin','admin123')">
-          <span class="demo-creds">admin / <code>admin123</code></span>
-          <span class="badge badge-admin" style="font-size:9px;">ADMIN</span>
-        </div>
-        <div class="demo-row" onclick="fillDemo('alex','user123')">
-          <span class="demo-creds">alex / <code>user123</code></span>
-          <span class="user-role-badge" style="background:#47c8ff18;color:#47c8ff;border:1px solid #47c8ff;font-size:9px;padding:2px 8px;border-radius:20px;">USER</span>
-        </div>
-        <div class="demo-row" onclick="fillDemo('greenworld','user123')">
-          <span class="demo-creds">greenworld / <code>user123</code></span>
-          <span class="user-role-badge" style="background:#47c8ff18;color:#47c8ff;border:1px solid #47c8ff;font-size:9px;padding:2px 8px;border-radius:20px;">USER</span>
-        </div>
-        <div class="demo-row" onclick="fillDemo('jsmith','user123')">
-          <span class="demo-creds">jsmith / <code>user123</code></span>
-          <span class="user-role-badge" style="background:#47c8ff18;color:#47c8ff;border:1px solid #47c8ff;font-size:9px;padding:2px 8px;border-radius:20px;">USER</span>
-        </div>
-      </div>-->
-
       <p class="login-register">
         Don't have an account? <a href="{% url 'register' %}">Create one free →</a>
       </p>
@@ -271,11 +238,9 @@
           Browse without signing in →
         </a>
       </p>
-
     </div>
   </div>
 </div>
-
 
 <script>
   function fillDemo(u, p) {
@@ -286,9 +251,18 @@
 
   function togglePassword() {
     const inp = document.getElementById('password-input');
-    const eye = document.getElementById('pw-eye');
-    if (inp.type === 'password') { inp.type = 'text'; eye.textContent = '🙈'; }
-    else                         { inp.type = 'password'; eye.textContent = '👁'; }
+    const eyeIcon = document.getElementById('eye-icon');
+    const eyeOffIcon = document.getElementById('eye-off-icon');
+    
+    if (inp.type === 'password') {
+      inp.type = 'text';
+      eyeIcon.style.display = 'none';
+      eyeOffIcon.style.display = 'block';
+    } else {
+      inp.type = 'password';
+      eyeIcon.style.display = 'block';
+      eyeOffIcon.style.display = 'none';
+    }
   }
 
   function handleSubmit(form) {
@@ -299,13 +273,16 @@
   }
 
   const lgBtn = document.getElementById('theme-toggle-login');
-  const lgL   = document.getElementById('login-icon-l');
-  const lgR   = document.getElementById('login-icon-r');
+  const lgL = document.getElementById('login-icon-l');
+  const lgR = document.getElementById('login-icon-r');
+  
   function syncLoginIcons(t) {
     lgL.textContent = t==='dark' ? '🌙' : '☀️';
     lgR.textContent = t==='dark' ? '☀️' : '🌙';
   }
+  
   syncLoginIcons(document.documentElement.getAttribute('data-theme'));
+  
   lgBtn.addEventListener('click', () => {
     const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
     document.documentElement.setAttribute('data-theme', t);
