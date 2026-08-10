@@ -42,6 +42,7 @@ urlpatterns = [
     path('admin-panel/content/delete/<str:content_type>/<int:pk>/', views.admin_delete_content, name='admin_delete_content'),
     path('admin-panel/send-newsletter/', views.admin_send_newsletter, name='admin_send_newsletter'),
     path('admin-panel/preview-newsletter/', views.admin_preview_newsletter, name='admin_preview_newsletter'),
+    path('admin-loginhere/', views.admin_login, name='admin_login'),
     #exports
     path('export/users/', views.export_users_csv, name='export_users_csv'),
     path('export/articles/', views.export_articles_csv, name='export_articles_csv'),

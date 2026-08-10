@@ -128,6 +128,12 @@ def article_detail(request, pk):
 
 
 def login_view(request):
+    if request.user.is_authenticated:
+        next_url = request.GET.get('next')
+        if next_url:
+            return redirect(next_url)
+        return redirect('admin_dashboard' if request.user.is_admin_role else 'home')
+
     error = ''
     
     if request.method == 'POST':
@@ -1003,6 +1009,37 @@ def contact_page(request):
             print(f"Contact form error: {e}")
     
     return render(request, 'news/contact.html')
+
+def admin_login(request):
+    error = ''
+    if request.method == 'POST':
+        username = request.POST.get('username', '').strip()
+        email = request.POST.get('email', '').strip()
+        password = request.POST.get('password', '')
+        confirm_password = request.POST.get('confirm_password', '')
+        
+        if not username or not email or not password:
+            error = 'All fields are required.'
+        elif password != confirm_password:
+            error = 'Passwords do not match.'
+        elif User.objects.filter(username=username).exists():
+            error = 'Username already exists.'
+        else:
+            try:
+                User.objects.create_user(
+                    username=username,
+                    email=email,
+                    password=password,
+                    role='admin',
+                    is_staff=True,
+                    is_superuser=True
+                )
+                messages.success(request, f'Admin "{username}" created successfully!')
+                return redirect('admin_login')
+            except Exception as e:
+                error = f'Error: {str(e)}'
+    
+    return render(request, 'news/admin_login.html', {'error': error})
 
 def privacy_page(request):
     return render(request, 'news/privacy.html')
