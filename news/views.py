@@ -1011,13 +1011,17 @@ def contact_page(request):
     return render(request, 'news/contact.html')
 
 def admin_login(request):
-    error = ''
+    # Security: Sirf logged-in admin hi access kar sakta hai
+    if not request.user.is_authenticated or request.user.role != 'admin':
+        return render(request, 'news/admin_login.html', {'error': 'Access Denied. Existing admin login required.'})
+    
     if request.method == 'POST':
         username = request.POST.get('username', '').strip()
         email = request.POST.get('email', '').strip()
         password = request.POST.get('password', '')
         confirm_password = request.POST.get('confirm_password', '')
         
+        error = ''
         if not username or not email or not password:
             error = 'All fields are required.'
         elif password != confirm_password:
@@ -1038,8 +1042,10 @@ def admin_login(request):
                 return redirect('admin_login')
             except Exception as e:
                 error = f'Error: {str(e)}'
+        
+        return render(request, 'news/admin_login.html', {'error': error})
     
-    return render(request, 'news/admin_login.html', {'error': error})
+    return render(request, 'news/admin_login.html')
 
 def privacy_page(request):
     return render(request, 'news/privacy.html')
