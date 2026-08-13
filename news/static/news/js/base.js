@@ -124,18 +124,18 @@ document.querySelectorAll('.notification-toast').forEach(el => {
 });
 
 
-document.querySelectorAll('.spotlight-wrap').forEach(wrap => {
-  const overlay = wrap.querySelector('.spotlight-overlay');
-  if (!overlay) return;
-  wrap.addEventListener('mousemove', e => {
-    const r = wrap.getBoundingClientRect();
-    overlay.style.background =
-      `radial-gradient(320px circle at ${e.clientX - r.left}px ${e.clientY - r.top}px,
-        rgba(232,255,71,0.13) 0%, transparent 70%)`;
-    overlay.style.opacity = '1';
-  });
-  wrap.addEventListener('mouseleave', () => { overlay.style.opacity = '0'; });
-});
+// document.querySelectorAll('.spotlight-wrap').forEach(wrap => {
+//   const overlay = wrap.querySelector('.spotlight-overlay');
+//   if (!overlay) return;
+//   wrap.addEventListener('mousemove', e => {
+//     const r = wrap.getBoundingClientRect();
+//     overlay.style.background =
+//       `radial-gradient(320px circle at ${e.clientX - r.left}px ${e.clientY - r.top}px,
+//         rgba(232,255,71,0.13) 0%, transparent 70%)`;
+//     overlay.style.opacity = '1';
+//   });
+//   wrap.addEventListener('mouseleave', () => { overlay.style.opacity = '0'; });
+// });
 
 
 function toggleMobileMenu() {
